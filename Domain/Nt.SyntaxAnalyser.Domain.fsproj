@@ -9,11 +9,13 @@
 
   <ItemGroup>
     <Compile Include="Utils.fs" />
+    <Compile Include="LLParsing\Factorisation.fs" />
+    <Compile Include="LLParsing\Derecursivation.fs" />
     <Compile Include="LLParsing\LL1Parser.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Nt.SyntaxParser.21.09.25.Test" Version="1.0.1" />
+    <PackageReference Include="Prod.Nt.SyntaxParser" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

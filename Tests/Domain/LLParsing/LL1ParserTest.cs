@@ -1,4 +1,6 @@
-﻿using Nt.SyntaxParser.Syntax.Structures;
+﻿using Nt.SyntaxParser.Syntax;
+using Nt.SyntaxAnalyser.LLParsing;
+using Nt.SyntaxParser.Syntax.Structures;
 
 namespace Nt.SyntaxAnalyser.Tests.Domain.LLParsing
 {
@@ -7,9 +9,12 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLParsing
         [Fact]
         public void LL1Parser_test1()
         {
-            var grammar = new Grammar();
-            
-
+            var parser = new SyntaxParser.Syntax.SyntaxParser();
+            var grammar = parser.ParseFile("../../../Resources/fact_test1.txt");
+            var new_grammar = Derecursivation.EliminateRecursivity(grammar);
+            new_grammar.ToString();
         }
+
+
     }
 }

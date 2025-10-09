@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Comparator.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="LLParsing\Factorisation.fs" />
     <Compile Include="LLParsing\Derecursivation.fs" />
@@ -15,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Prod.Nt.SyntaxParser" Version="1.0.0" />
+    <PackageReference Include="Prod.Nt.SyntaxParser" Version="1.0.2" />
   </ItemGroup>
 
 </Project>

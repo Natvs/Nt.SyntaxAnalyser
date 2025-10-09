@@ -1,0 +1,14 @@
+﻿N = {S, A, B, C}
+T = {a, b, c}
+
+S = S
+
+R: S -> A ;
+
+R: A -> A c ;
+R: A -> B ;
+
+R: B -> B b ;
+R: B -> C ;
+
+R: C -> a ;

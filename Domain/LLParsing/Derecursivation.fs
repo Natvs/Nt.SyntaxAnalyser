@@ -35,11 +35,14 @@ let public eliminate_direct_recursivity (s: int) (g:Grammar) =
         |> remove_first_symbol
         |> create_rule g.Terminals g.NonTerminals newindex
         |> add_non_terminal_to_derivation newindex
-        |> add_rule_to_grammar g)
+        |> add_rule_to_grammar g
+        |> ignore)
 
     (*Adds an empty rule with newsymbol*)
-    newindex |> create_empty_rule g.Terminals g.NonTerminals
+    newindex
+    |> create_empty_rule g.Terminals g.NonTerminals
     |> add_rule_to_grammar g
+    |> ignore
 
     g
 
@@ -56,7 +59,8 @@ let public eliminate_indirect_recursivity (axiom: int) (firsttoken: int) (g: Gra
         symbol_rules |> List.iter(fun (sr: Rule) ->
             create_rule g.Terminals g.NonTerminals axiom (List.ofSeq sr.Derivation)
             |> expand_rule_derivation (rr.Derivation |> List.ofSeq |> List.tail)
-            |> add_rule_to_grammar g)
+            |> add_rule_to_grammar g
+            |> ignore)
     )
 
     g

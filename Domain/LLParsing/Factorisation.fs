@@ -32,6 +32,7 @@ let rec private get_common_pattern(reference: GrammarToken list) (rule: GrammarT
 /// Returns true if the rule derivation shares a common starting pattern with one of the rules in list
 let private has_common_pattern (rules: Rule list) (rule: Rule) : bool =
     rules
+    |> List.filter(fun r -> r.Derivation.Count > 0)
     |> List.map(fun r -> (r.Derivation[0].Index, r.Derivation[0].Type))
     |> List.contains((rule.Derivation[0].Index, rule.Derivation[0].Type))
 
@@ -39,6 +40,7 @@ let private has_common_pattern (rules: Rule list) (rule: Rule) : bool =
 let private need_factorisation (rules: Rule list): bool =
     let mylist =
         rules
+        |> List.filter(fun r -> r.Derivation.Count > 0)
         |> List.map(fun r -> r |> has_common_pattern (rules |> List.except (r::[])) )
 
     mylist
@@ -120,13 +122,20 @@ let rec public factorise_rules (g: Grammar) (rules: Rule list): Grammar =
         |> ignore
     )
 
+    let filtered_new_rules =
+        g.Rules
+        |> List.ofSeq
+        |> List.filter(fun r -> r.Token.Index = new_index)
+    if filtered_new_rules |> need_factorisation then filtered_new_rules |> factorise_rules g |> ignore else ()
+
     let filtered_rules =
         g.Rules
         |> List.ofSeq
         |> List.filter(fun r -> r.Token.Index = rules.Head.Token.Index)
 
-    match filtered_rules |> need_factorisation with
-        | true -> rules |> factorise_rules g
+
+    match (filtered_rules |> need_factorisation) with
+        | true -> filtered_rules |> factorise_rules g
         | false -> g
 
 /// Factorises a grammar

@@ -1,0 +1,7 @@
+﻿N = {A, A_fact1}
+T = {a, b, c}
+
+S = A
+
+R: A -> a b A_fact1 ;
+R: A_fact1 -> c | ;

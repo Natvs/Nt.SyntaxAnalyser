@@ -1,0 +1,7 @@
+﻿N = {A}
+T = {a, b, c, d, e, f, g, h}
+
+S = A
+
+R: A -> a b c d | a b c e ;
+R: A -> a b f g | a b f h ;

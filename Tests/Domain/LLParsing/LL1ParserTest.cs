@@ -2,6 +2,8 @@
     public class LL1ParserTest
     {
 
+        // Derecursivation testing
+
         private static void TestDerecursivation(string rawpath, string resultpath)
         {
             var parser = new SyntaxParser();
@@ -24,14 +26,19 @@
         [Fact]
         public void LL1Parser_rec_test1()
         {
+            // Test simple direct recursivity elimination
             TestDerecursivation("../../../Resources/Rec/Raw/rec_test1.txt", "../../../Resources/Rec/Result/rec_test1_result.txt");
         }
 
         [Fact]
         public void LL1Parser_rec_test2()
         {
+            // Test direct recursivity elimination on two non-terminals
             TestDerecursivation("../../../Resources/Rec/Raw/rec_test2.txt", "../../../Resources/Rec/Result/rec_test2_result.txt");
         }
+
+
+        // Factorisation testing
 
         [Fact]
         public void LL1Parser_fact_test1()
@@ -61,7 +68,13 @@
             TestFactorisation("../../../Resources/Fact/Raw/fact_test4.txt", "../../../Resources/Fact/Result/fact_test4_result.txt");
         }
 
-
+        [Fact]
+        public void LL1Parser_fact_test5()
+        {
+            // Test nested factorisations
+            TestFactorisation("../../../Resources/Fact/Raw/fact_test5.txt", "../../../Resources/Fact/Result/fact_test5_result.txt");
+        }
+ 
 
     }
 }

@@ -1,15 +1,13 @@
-﻿N = {A}
-T = {a, b, c, d, e, f, g, h}
+﻿N = {A, A_fact1, A_fact1_fact1}
+T = {a, b, c, d, e, f}
 
 S = A
 
 R: A -> a b c d | a b c e ;
-R: A -> a b f g | a b f h ;
+R: A -> a b f ;
 
 R: A -> a b A_fact1 ;
 
-R: A_fact1 -> c A_fact2 ;
-R: A_fact2 -> d | e ;
+R: A_fact1 -> c A_fact1_fact1 | f ;
+R: A_fact1_fact1 -> d | e ;
 
-R: A_fact1 -> f A_fact3 ;
-R: A_fact3 -> g | h ;

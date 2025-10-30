@@ -1,4 +1,4 @@
-﻿module Nt.SyntaxAnalyser.Utils
+﻿module Nt.Syntax.Utils
 
 open Nt.SyntaxParser.Parsing.Structures
 open Nt.SyntaxParser.Syntax.Structures
@@ -46,7 +46,20 @@ let internal add_rule_to_grammar (g: Grammar) (rule: Rule) =
 
 /// Extends the name of a token at a given index
 let internal extend_token (tokens: TokensList) (index: int) (stringExtension: string) : Token =
-    new Token(tokens.Item(index).Name + stringExtension)
+    let rec get_unique_name (root: string) (id: int) (strings: string list) =
+        let newtoken = root + id.ToString()
+        match strings |> List.contains newtoken with
+            | false -> newtoken
+            | true -> strings |> get_unique_name root (id + 1)
+
+    let token_name =
+        tokens
+        |> List.ofSeq
+        |> List.map(fun t -> t.Name)
+        |> get_unique_name (tokens.Item(index).Name + stringExtension) 1
+
+    new Token(token_name)
+
 
 /// Adds a token to a tokens list
 let internal add_to_tokens (tokens: TokensList) (token: Token) : Token =

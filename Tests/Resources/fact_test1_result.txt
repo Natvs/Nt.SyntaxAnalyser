@@ -1,8 +1,8 @@
-﻿N = {S, A, A_rec}
-T = {a, b}
-S = S
+﻿N = {A, A_fact1}
+T = {a, b, c, d}
 
-R: S -> A;
-R: A -> b A_rec;
-R: A_rec -> a A_rec;
-R: A_rec -> ;
+S = A
+
+R: A -> a b A_fact1 ;
+R: A_fact1 -> c ;
+R: A_fact1 -> d ;

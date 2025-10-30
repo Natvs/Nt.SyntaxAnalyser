@@ -1,8 +1,8 @@
-﻿module Nt.SyntaxAnalyser.LLParsing.Derecursivation
+﻿module Nt.Syntax.LLParsing.Derecursivation
 
 open Nt.SyntaxParser.Parsing.Structures
 open Nt.SyntaxParser.Syntax.Structures
-open Nt.SyntaxAnalyser.Utils
+open Nt.Syntax.Utils
 
 let private need_direct_derecursivation (rules: Rule list) (s:int): bool =
     rules

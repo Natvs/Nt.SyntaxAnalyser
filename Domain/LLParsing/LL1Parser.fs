@@ -1,8 +1,8 @@
-﻿module Nt.SyntaxAnalyser.LLParsing.LL1Parser
+﻿module Nt.Syntax.LLParsing.LL1Parser
 
 open Nt.SyntaxParser.Syntax.Structures
-open Nt.SyntaxAnalyser.LLParsing.Derecursivation
-open Nt.SyntaxAnalyser.LLParsing.Factorisation
+open Nt.Syntax.LLParsing.Derecursivation
+open Nt.Syntax.LLParsing.Factorisation
 
 [<CompiledName("Parse")>]
 let parse(g: Grammar): Grammar =

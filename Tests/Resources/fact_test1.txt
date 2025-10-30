@@ -1,6 +1,7 @@
-﻿N = {S, A}
-T = {a, b}
-S = S
+﻿N = {A}
+T = {a, b, c, d}
 
-R: S -> A;
-R: A -> A a | b;
+S = A
+
+R: A -> a b c ;
+R: A -> a b d ;

@@ -1,0 +1,9 @@
+﻿N = {A, A_fact1, A_fact2}
+T = {a, b, c, d, e, f, g, h}
+
+S = A
+
+R: A -> a b A_fact1 ;
+R: A -> e f A_fact2 ;
+R: A_fact1 -> c | d ;
+R: A_fact2 -> g | h ;

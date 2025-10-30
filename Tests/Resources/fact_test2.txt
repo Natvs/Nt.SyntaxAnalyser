@@ -1,14 +1,7 @@
-﻿N = {S, A, B, C}
-T = {a, b, c}
+﻿N = {A, B}
+T = {a, b, c, d, e, f, g, h}
 
-S = S
+S = A
 
-R: S -> A ;
-
-R: A -> A c ;
-R: A -> B ;
-
-R: B -> B b ;
-R: B -> C ;
-
-R: C -> a ;
+R: A -> a b c | a b d ;
+R: B -> e f g | e f h ;

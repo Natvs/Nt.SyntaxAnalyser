@@ -1,6 +1,6 @@
 ﻿module Nt.Syntax.LLParsing.Factorisation
 
-open Nt.SyntaxParser.Syntax.Structures
+open Nt.Syntax.Structures
 open Nt.Syntax.Utils
 
 exception public EmptyPatternException of string

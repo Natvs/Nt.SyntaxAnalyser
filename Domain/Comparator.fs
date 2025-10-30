@@ -1,7 +1,7 @@
 ﻿module Nt.Syntax.Comparator
 
-open Nt.SyntaxParser.Parsing.Structures
-open Nt.SyntaxParser.Syntax.Structures
+open Nt.Parsing.Structures
+open Nt.Syntax.Structures
 
 [<CompiledName("CompareTokens")>]
 let public compare_tokens (t1: Token) (t2: Token) = t1.Name = t2.Name

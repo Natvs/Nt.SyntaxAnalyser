@@ -1,6 +1,6 @@
 ﻿module Nt.Syntax.LLParsing.LL1Parser
 
-open Nt.SyntaxParser.Syntax.Structures
+open Nt.Syntax.Structures
 open Nt.Syntax.LLParsing.Derecursivation
 open Nt.Syntax.LLParsing.Factorisation
 

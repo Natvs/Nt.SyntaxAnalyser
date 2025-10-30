@@ -1,7 +1,7 @@
 ﻿module Nt.Syntax.Utils
 
-open Nt.SyntaxParser.Parsing.Structures
-open Nt.SyntaxParser.Syntax.Structures
+open Nt.Parsing.Structures
+open Nt.Syntax.Structures
 
 /// Compares two tokens
 let internal compare_tokens (token1: GrammarToken) (token2: GrammarToken) =

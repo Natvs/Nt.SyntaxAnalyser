@@ -119,13 +119,15 @@ let rec public factorise_rules (g: Grammar) (rules: Rule list): Grammar =
         |> add_rule_to_grammar g
         |> ignore
     )
-            
-    g.Rules
-    |> List.ofSeq
-    |> List.groupBy(fun (r: Rule) -> r.Token.Index)
-    |> List.filter(fun (_, l) -> need_factorisation l)
-    |> List.iter(fun (_, r) -> r |> factorise_rules g |> ignore)
-    g
+
+    let filtered_rules =
+        g.Rules
+        |> List.ofSeq
+        |> List.filter(fun r -> r.Token.Index = rules.Head.Token.Index)
+
+    match filtered_rules |> need_factorisation with
+        | true -> rules |> factorise_rules g
+        | false -> g
 
 /// Factorises a grammar
 [<CompiledName("Factorise")>]

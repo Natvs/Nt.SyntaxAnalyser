@@ -1,0 +1,7 @@
+﻿N = {A, B}
+T = {a, b, c}
+
+S = A
+
+R: A -> B a ;
+R: B -> A b | c ;

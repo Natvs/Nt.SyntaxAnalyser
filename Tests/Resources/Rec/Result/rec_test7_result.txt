@@ -1,0 +1,8 @@
+﻿N = {A, B, B_rec1}
+T = {a, b, c}
+
+S = A
+
+R: A -> B a ;
+R: B -> c B_rec1 ;
+R: B_rec1 -> a b B_rec1 |  ;

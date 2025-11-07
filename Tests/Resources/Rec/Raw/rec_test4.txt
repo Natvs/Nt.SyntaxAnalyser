@@ -3,4 +3,4 @@ T = {a, b}
 
 S = A
 
-R: A -> A a | b;
+R: A -> A A a | b ;

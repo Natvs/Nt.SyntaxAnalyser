@@ -3,5 +3,5 @@ T = {a, b, c}
 
 S = B
 
-R: A -> a ;
-R: B -> A b | c ;
+R:  A -> a ;
+R:  B -> a b | c ;

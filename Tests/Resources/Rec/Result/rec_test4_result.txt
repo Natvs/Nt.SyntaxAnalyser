@@ -4,5 +4,5 @@ T = {a, b}
 S = A
 
 R: A -> b A_rec1;
-R: A_rec1 -> a A_rec1;
+R: A_rec1 -> A a A_rec1;
 R: A_rec1 -> ;

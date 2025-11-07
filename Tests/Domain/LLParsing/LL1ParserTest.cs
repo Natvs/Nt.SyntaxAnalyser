@@ -37,6 +37,40 @@
             TestDerecursivation("../../../Resources/Rec/Raw/rec_test2.txt", "../../../Resources/Rec/Result/rec_test2_result.txt");
         }
 
+        [Fact]
+        public void LL1Parser_rec_test3()
+        {
+            // Test indirect recursivity elimination
+            TestDerecursivation("../../../Resources/Rec/Raw/rec_test3.txt", "../../../Resources/Rec/Result/rec_test3_result.txt");
+        }
+
+        [Fact]
+        public void LL1Parser_rec_test4()
+        {
+            // Test double direct recursivity elimination
+            TestDerecursivation("../../../Resources/Rec/Raw/rec_test4.txt", "../../../Resources/Rec/Result/rec_test4_result.txt");
+        }
+
+        [Fact]
+        public void LL1Parser_rec_test5()
+        {
+            // Test double indirect recursivity elimination
+            TestDerecursivation("../../../Resources/Rec/Raw/rec_test5.txt", "../../../Resources/Rec/Result/rec_test5_result.txt");
+        }
+
+        [Fact]
+        public void LL1Parser_rec_test6()
+        {
+            // Test indirect derecursivity when first symbol has two derivations
+            TestDerecursivation("../../../Resources/Rec/Raw/rec_test6.txt", "../../../Resources/Rec/Result/rec_test6_result.txt");
+        }
+
+        [Fact]
+        public void LL1Parser_rec_test7()
+        {
+            // Test mixed direct and indirect recursivity elimination
+            TestDerecursivation("../../../Resources/Rec/Raw/rec_test7.txt", "../../../Resources/Rec/Result/rec_test7_result.txt");
+        }
 
         // Factorisation testing
 

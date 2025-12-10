@@ -69,17 +69,17 @@ let public eliminate_indirect_recursivity (axiom: int) (firsttoken: int) (g: Gra
 let public eliminate_recursivity (g: Grammar) =
     let nonTerminals = g.NonTerminals |> List.ofSeq
 
-    nonTerminals |> List.map(fun (t: Token) ->
+    nonTerminals |> List.map(fun (t: Symbol) ->
         let current_index = g.NonTerminals.IndexOf t
         nonTerminals
-        |> List.filter(fun (nt: Token) -> (g.NonTerminals.IndexOf nt.Name) < current_index)
-        |> List.map(fun (pt: Token) ->
+        |> List.filter(fun (nt: Symbol) -> (g.NonTerminals.IndexOf nt.Name) < current_index)
+        |> List.map(fun (pt: Symbol) ->
             let compare_index = g.NonTerminals.IndexOf pt
             eliminate_indirect_recursivity current_index compare_index g)
         |> ignore)
     |> ignore  
 
-    nonTerminals |> List.iter(fun (t: Token) -> 
+    nonTerminals |> List.iter(fun (t: Symbol) -> 
         let current_index = g.NonTerminals.IndexOf t
         match need_direct_derecursivation (g.Rules |> List.ofSeq) current_index with
             | false -> ()

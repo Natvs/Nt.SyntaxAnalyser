@@ -1,0 +1,6 @@
+﻿N = {TEST}
+T = {a}
+
+S = TEST
+
+R: TEST -> a ;

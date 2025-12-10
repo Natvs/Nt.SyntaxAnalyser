@@ -11,13 +11,13 @@ let internal compare_token (index: int) (t: GrammarTokenType) (token: GrammarTok
     token.Index = index && token.Type = t
 
 /// Creates an empty rule for a given symbol index
-let internal create_empty_rule (terminals: TokensList) (nonTerminals: TokensList) (symbolIndex:int) : Rule =
+let internal create_empty_rule (terminals: SymbolsList) (nonTerminals: SymbolsList) (symbolIndex:int) : Rule =
     let rule = new Rule(terminals, nonTerminals)
     rule.SetToken(symbolIndex, -1)
     rule
 
 /// Creates a rule for a given symbol index and derivation
-let internal create_rule (terminals: TokensList) (nonTerminals: TokensList) (symbolIndex:int) (derivation:GrammarToken list) : Rule =
+let internal create_rule (terminals: SymbolsList) (nonTerminals: SymbolsList) (symbolIndex:int) (derivation:GrammarToken list) : Rule =
     let rule = new Rule(terminals, nonTerminals)
     rule.SetToken(symbolIndex, -1)
     derivation
@@ -45,7 +45,7 @@ let internal add_rule_to_grammar (g: Grammar) (rule: Rule) =
     g
 
 /// Extends the name of a token at a given index
-let internal extend_token (tokens: TokensList) (index: int) (stringExtension: string) : Token =
+let internal extend_token (tokens: SymbolsList) (index: int) (stringExtension: string) : Symbol =
     let rec get_unique_name (root: string) (id: int) (strings: string list) =
         let newtoken = root + id.ToString()
         match strings |> List.contains newtoken with
@@ -58,11 +58,11 @@ let internal extend_token (tokens: TokensList) (index: int) (stringExtension: st
         |> List.map(fun t -> t.Name)
         |> get_unique_name (tokens.Item(index).Name + stringExtension) 1
 
-    new Token(token_name)
+    new Symbol(token_name)
 
 
 /// Adds a token to a tokens list
-let internal add_to_tokens (tokens: TokensList) (token: Token) : Token =
+let internal add_to_tokens (tokens: SymbolsList) (token: Symbol) : Symbol =
     tokens.Add(token)
     token
 

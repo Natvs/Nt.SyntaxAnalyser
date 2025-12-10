@@ -4,10 +4,10 @@ open Nt.Parsing.Structures
 open Nt.Syntax.Structures
 
 [<CompiledName("CompareTokens")>]
-let public compare_tokens (t1: Token) (t2: Token) = t1.Name = t2.Name
+let public compare_tokens (t1: Symbol) (t2: Symbol) = t1.Name = t2.Name
 
 [<CompiledName("CompareTokens")>]
-let rec public compare_tokens_list (l1: Token list) (l2: Token list) =
+let rec public compare_tokens_list (l1: Symbol list) (l2: Symbol list) =
     match l1, l2 with
         | [], [] -> true
         | a::ta, b::tb when compare_tokens a b -> compare_tokens_list ta tb

@@ -1,4 +1,4 @@
-﻿module Nt.Syntax.LLAnalysing.EmptyGenerators
+﻿module Nt.Syntax.LLAnalysing.EmptyAnalyser
 
 open Nt.Syntax.Structures
 

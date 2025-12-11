@@ -10,14 +10,14 @@ using Nt.Syntax;
 
 namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
 {
-    public class EmptyGeneratorsTest
+    public class EmptyAnalyserTest
     {
         private List<int> GetEmptyGenerators(string filename)
         {
             var parser = new SyntaxParser();
             var grammar = parser.ParseFile(filename);
 
-            var emptygenerators = EmptyGenerators.Analyse(grammar);
+            var emptygenerators = EmptyAnalyser.Analyse(grammar);
 
             return [.. emptygenerators];
         }

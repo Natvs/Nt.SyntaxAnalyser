@@ -1,0 +1,3 @@
+﻿N = {EMPTY}
+
+R: EMPTY -> ;

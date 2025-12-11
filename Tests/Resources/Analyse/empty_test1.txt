@@ -1,0 +1,4 @@
+﻿N = {NOT_EMPTY}
+T = {not_empty}
+
+R: NOT_EMPTY -> not_empty ;

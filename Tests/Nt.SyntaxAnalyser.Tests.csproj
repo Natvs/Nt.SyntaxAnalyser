@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Domain\Domain.fsproj" />
+    <ProjectReference Include="..\Domain\Nt.SyntaxAnalyser.Domain.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

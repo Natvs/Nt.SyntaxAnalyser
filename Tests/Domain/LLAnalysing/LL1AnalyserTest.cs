@@ -1,15 +1,6 @@
-﻿using Nt.Parsing.Structures;
-using Nt.Parsing;
+﻿using Nt.Syntax;
 using Nt.Syntax.LLAnalysing;
-using Nt.Syntax.Structures;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Net.Mime.MediaTypeNames;
-using Nt.Syntax;
-using static Nt.Syntax.LLAnalysing.LL1Analyser;
+using Nt.Parsing;
 
 namespace Nt.SyntaxAnalyser.LLAnalysing.Tests
 {

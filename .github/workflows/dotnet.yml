@@ -26,7 +26,7 @@ jobs:
         https://nuget.pkg.github.com/Natvs/index.json \
           --name github \
           --username Natvs \
-          --password ${{ secrets.PACKAGE_REPO_TOKEN }}
+          --password ${{ secrets.PACKAGE_REPO_TOKEN }} \
           --store-password-in-clear-text
     - name: Restore dependencies
       run: dotnet restore

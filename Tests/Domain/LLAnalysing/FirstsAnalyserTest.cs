@@ -26,10 +26,18 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
             return firsts_list;
         }
 
+        private void AssertContains<T>(ICollection<T> collection, ICollection<T> values)
+        {
+            foreach (var value in values)
+            {
+                Assert.Contains(value, collection);
+            }
+        }
+
         [Fact]
         public void Firsts_test1()
         {
-            var firsts = GetFirsts("../../../Resources/Analyse/firsts_test1.txt");
+            var firsts = GetFirsts("../../../Resources/Analyse/Firsts/firsts_test1.txt");
 
             Assert.Single(firsts);
             Assert.Single(firsts[0]);
@@ -39,7 +47,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
         [Fact]
         public void Firsts_test2()
         {
-            var firsts = GetFirsts("../../../Resources/Analyse/firsts_test2.txt");
+            var firsts = GetFirsts("../../../Resources/Analyse/Firsts/firsts_test2.txt");
 
             Assert.Single(firsts);
             Assert.Single(firsts[0]);
@@ -49,7 +57,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
         [Fact]
         public void Firsts_test3()
         {
-            var firsts = GetFirsts("../../../Resources/Analyse/firsts_test3.txt");
+            var firsts = GetFirsts("../../../Resources/Analyse/Firsts/firsts_test3.txt");
 
             Assert.Equal(2, firsts.Count);
             Assert.Single(firsts[0]);
@@ -61,7 +69,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
         [Fact]
         public void Firsts_test4()
         {
-            var firsts = GetFirsts("../../../Resources/Analyse/firsts_test4.txt");
+            var firsts = GetFirsts("../../../Resources/Analyse/Firsts/firsts_test4.txt");
 
             Assert.Equal(2, firsts.Count);
             Assert.Single(firsts[0]);
@@ -72,7 +80,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
         [Fact]
         public void Firsts_test5()
         {
-            var firsts = GetFirsts("../../../Resources/Analyse/firsts_test5.txt");
+            var firsts = GetFirsts("../../../Resources/Analyse/Firsts/firsts_test5.txt");
 
             Assert.Equal(2, firsts.Count);
             Assert.Equal(2, firsts[0].Count);
@@ -80,6 +88,30 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
             Assert.Contains(0, firsts[0]);
             Assert.Contains(1, firsts[0]);
             Assert.Contains(1, firsts[1]);
+        }
+
+        [Fact]
+        public void Firsts_test6()
+        {
+            var firsts = GetFirsts("../../../Resources/Analyse/Firsts/firsts_test6.txt");
+
+            Assert.Equal(4, firsts.Count);
+
+            // Non terminal A
+            Assert.Equal(8, firsts[0].Count);
+            AssertContains(firsts[0], [0, 1, 2, 3, 4, 5, 6, 7]);
+
+            // Non terminal B
+            Assert.Equal(5, firsts[1].Count);
+            AssertContains(firsts[1], [3, 4, 5, 6, 7]);
+
+            // Non terminal C
+            Assert.Single(firsts[2]);
+            Assert.Contains(4, firsts[2]);
+
+            // Non terminal D
+            Assert.Equal(2, firsts[3].Count);
+            AssertContains(firsts[3], [6, 7]);
         }
 
     }

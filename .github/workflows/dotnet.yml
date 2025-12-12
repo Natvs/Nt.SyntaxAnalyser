@@ -20,6 +20,14 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
+    - name: Authenticate GitHub package source
+      run: |
+        dotnet nuget add source \
+        https://nuget.pkg.github.com/Natvs/index.json \
+          --name github \
+          --username Natvs \
+          --password ${{ secrets.PACKAGE_REPO_TOKEN }} \
+          --store-password-in-clear-text
     - name: Restore dependencies
       run: dotnet restore
     - name: Build

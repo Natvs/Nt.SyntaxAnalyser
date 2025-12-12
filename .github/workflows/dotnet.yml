@@ -27,6 +27,7 @@ jobs:
           --name github \
           --username Natvs \
           --password ${{ secrets.PACKAGE_REPO_TOKEN }}
+          --store-password-in-clear-text
     - name: Restore dependencies
       run: dotnet restore
     - name: Build

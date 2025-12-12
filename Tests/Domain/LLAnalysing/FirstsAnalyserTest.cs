@@ -1,17 +1,11 @@
-﻿using Nt.Syntax;
-using Nt.Syntax.LLAnalysing;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using static Nt.Syntax.Tests.Utils;
 
-namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
+namespace Nt.Syntax.LLAnalysing.Tests
 {
     public class FirstsAnalyserTest
     {
 
-        public List<List<int>> GetFirsts(string filename)
+        private List<List<int>> GetFirsts(string filename)
         {
             var parser = new SyntaxParser();
             var grammar = parser.ParseFile(filename);
@@ -24,14 +18,6 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
                 firsts_list.Add(new List<int>(firsts[i]));
             }
             return firsts_list;
-        }
-
-        private void AssertContains<T>(ICollection<T> collection, ICollection<T> values)
-        {
-            foreach (var value in values)
-            {
-                Assert.Contains(value, collection);
-            }
         }
 
         [Fact]

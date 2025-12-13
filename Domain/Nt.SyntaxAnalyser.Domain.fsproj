@@ -8,12 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Syntax\Comparator.fs" />
     <Compile Include="Syntax\Utils.fs" />
+    <Compile Include="Syntax\Comparator.fs" />
     <Compile Include="Syntax\LLAnalysing\Utils.fs" />
-    <Compile Include="Syntax\LLAnalysing\FollowsAnalyser.fs" />
-    <Compile Include="Syntax\LLAnalysing\FirstsAnalyser.fs" />
     <Compile Include="Syntax\LLAnalysing\EmptyAnalyser.fs" />
+    <Compile Include="Syntax\LLAnalysing\FirstsAnalyser.fs" />
+    <Compile Include="Syntax\LLAnalysing\FollowsAnalyser.fs" />
+    <Compile Include="Syntax\LLAnalysing\AnalyseSet.fs" />
     <Compile Include="Syntax\LLAnalysing\LL1Analyser.fs" />
     <Compile Include="Syntax\LLParsing\Factorisation.fs" />
     <Compile Include="Syntax\LLParsing\Derecursivation.fs" />

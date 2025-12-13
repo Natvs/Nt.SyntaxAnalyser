@@ -16,12 +16,12 @@ internal class Program
 
     private static void SourceCodeAnalysis()
     {
-        bool continue_analysis = true;
-
         var syntaxparser = new SyntaxParser();
         var grammar = syntaxparser.ParseFile("../../../Resources/SimpleCGrammar.txt");
         LL1Parser.Parse(grammar);
+        var analyseSet = LL1AnalyseSet.GetLookAheadSet(grammar);
 
+        bool continue_analysis = true;
         while (continue_analysis)
         {
             string? text = null;
@@ -34,8 +34,8 @@ internal class Program
                 if (text != "end") input += text + "\n";
             }
             var checkpoints = new SymbolsList([";"]);
-            var parserResult = parser.Parse(input);           
-            var analyseResult = LL1Analyser.Analyse(grammar, parserResult, checkpoints);
+            var parserResult = parser.Parse(input);  
+            var analyseResult = LL1Analyser.Analyse(analyseSet, parserResult, checkpoints);
             PrintAnalyseResult(grammar, parserResult, analyseResult);
 
             continue_analysis = false;

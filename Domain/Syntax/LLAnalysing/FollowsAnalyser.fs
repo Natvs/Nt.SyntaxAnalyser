@@ -10,13 +10,6 @@ let rec private is_empty_generator (empty_generators: int list) (sequence: Gramm
     | symbol::tail when empty_generators |> List.contains symbol.Index -> tail |> is_empty_generator empty_generators
     | _ -> false
 
-let rec private get_sequence_firsts (empty_generators: int list) (firsts: int list list) (sequence: GrammarToken list) =
-    match sequence with
-    | [] -> []
-    | token::_ when token.Type = GrammarTokenType.Terminal -> token.Index::[]
-    | token::tail when empty_generators |> List.contains token.Index -> firsts[token.Index]@(get_sequence_firsts empty_generators firsts tail) |> List.distinct
-    | token::_ -> firsts[token.Index]
-
 let rec private compute_sequence (empty_generators: int list) (firsts: int list list) (follows: int list list) (rule_symbol: int) (derivation: GrammarToken list) =
     match derivation with
     | [] -> follows

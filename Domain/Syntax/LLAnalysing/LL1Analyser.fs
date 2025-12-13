@@ -6,13 +6,13 @@ open Nt.Parsing.Structures
 open Nt.Syntax.Structures
 open Nt.Syntax.LLAnalysing.LL1AnalyseSet
 
-exception public SyntaxException of ParsedToken * Terminal
+exception public SyntaxException of ParsedToken
 exception public RegexException of ParsedToken * string
 exception public UnknownSymbolType of GrammarToken
 exception public UnexpectedEndOfFileException
 
 type private AnalyserContext = {
-    Datas : AnalyseSet
+    AnalyseSet : AnalyseSet
     Symbols : Symbol list
     Parsed : ParsedToken list
     ErrorCheckpoint : Symbol list
@@ -38,8 +38,8 @@ let private isCurrentCheckPoint (context: AnalyserContext) =
     |> List.map (fun cp -> cp.Name)
     |> List.contains tokenString
 
-let private isCheckPoint (context: AnalyserContext) (token: Terminal) =
-    let tokenString = context.Datas.Terminals[token.Index].Name
+let private isCheckPoint (context: AnalyserContext) (token: GrammarToken) =
+    let tokenString = context.AnalyseSet.Terminals[token.Index].Name
     context.ErrorCheckpoint 
     |> List.map (fun cp -> cp.Name)
     |> List.contains tokenString
@@ -69,41 +69,67 @@ let private resetSyntaxException (context : AnalyserContext) =
     context.SyntaxError <- false
     context
 
-let private isRuleMatching (parsed: ParsedToken) (r: EnrichedRule) (context: AnalyserContext) =
-    let firstSymbolIndex = r.Rule.Derivation[0].Index
-    let currentToken = context.Symbols[parsed.TokenIndex]
-    r.Rule.Derivation.Count > 0 &&
-    (
-        r.Rule.Derivation[0].Type = GrammarTokenType.Terminal && context.Datas.Terminals[firstSymbolIndex].Name = currentToken.Name
-        ||
-        r.Rule.Derivation[0].Type = GrammarTokenType.NonTerminal && context.Datas.NonTerminals[firstSymbolIndex].Name = currentToken.Name
-    )
-
 let private isRegExSymbol (token: GrammarToken) (context: AnalyserContext) =
-    context.Datas.RegEx 
+    context.AnalyseSet.RegEx 
     |> List.exists (fun e -> e.Token.Index = token.Index)
 
-let private handleTerminal (parsed: ParsedToken) (term: Terminal) (context: AnalyserContext) =
+let private handleTerminal (term: Terminal) (context: AnalyserContext) =
+    let parsed = context.Parsed[context.CurrentIndex];
     match context.SyntaxError, context.Symbols[parsed.TokenIndex].Name with
     | true, _ when term |> isCheckPoint context -> context |> resetSyntaxException |> ignore
-    | _, s when s <> context.Datas.Terminals[term.Index].Name -> raise (SyntaxException (parsed, term))
+    | _, s when s <> context.AnalyseSet.Terminals[term.Index].Name -> 
+        try
+            raise (SyntaxException(parsed))
+        with
+            | :? SyntaxException as ex -> context |> handleSyntaxException ex |> ignore
     | _ -> ()
-    if (context.CurrentIndex+1 < context.Parsed.Length) then context |> read
+    if (context.CurrentIndex < context.Parsed.Length-1) then context |> read
     else context
 
-let private handleRegex (parsed: ParsedToken) (nonterm: NonTerminal) (context: AnalyserContext) =
+let private handleRegex (nonterm: NonTerminal) (context: AnalyserContext) =
+    let parsed = context.Parsed[context.CurrentIndex];
     let regex =
-        context.Datas.RegEx
+        context.AnalyseSet.RegEx
         |> List.find(fun e -> e.Token.Index = nonterm.Index)
     match context.SyntaxError, context.Symbols[parsed.TokenIndex].Name with
     | false, s when (s, regex.Pattern) |> Regex.IsMatch = false -> raise (RegexException (parsed, regex.Pattern))
     | _ -> ()
     context |> read
 
-let rec private analyseRules (context : AnalyserContext) (symbol_rules : EnrichedRule list) =
-    let token = context.Parsed[context.CurrentIndex]
-    symbol_rules
-    |> List.iter (fun r ->        
+let rec private compute_sequence (sequence: GrammarToken list) (context: AnalyserContext) =
+    match sequence with
+    | [] -> ()
+    | (:? Terminal as term)::tail -> 
+        context
+        |> handleTerminal term
+        |> compute_sequence tail
+    | (:? NonTerminal as nonterm)::tail ->
+        context
+        |> handle_non_terminal nonterm.Index
+        |> compute_sequence tail
+    | symbol::_ -> raise (UnknownSymbolType symbol)
+
+and private handle_non_terminal (index :int) (context : AnalyserContext) =
+    let parsed = context.Parsed[context.CurrentIndex]
+    if (context.AnalyseSet.Terminals |> List.exists (fun t -> context.Symbols[parsed.TokenIndex].Name = t.Name))
+        then
+        let terminal_index =
+            context.AnalyseSet.Terminals
+            |> List.findIndex (fun s -> context.Symbols[parsed.TokenIndex].Name = s.Name)
+        context.AnalyseSet.Rules
+        |> List.filter (fun r -> r.Rule.Token.Index = index && r.Symbols |> List.contains terminal_index)
+        |> List.iter (fun r-> 
+            context
+            |> compute_sequence (r.Rule.Derivation |> List.ofSeq)
+        )
+    else 
+        try
+            raise (SyntaxException(parsed))
+        with
+        | :? SyntaxException as ex -> context |> handleSyntaxException ex |> ignore
+    context
+    (*|> List.iter (fun r ->   
+        
         match (r, context) ||> isRuleMatching token with
         | false ->
             try
@@ -125,31 +151,31 @@ let rec private analyseRules (context : AnalyserContext) (symbol_rules : Enriche
                 | :? RegexException as ex -> context |> handleRegexException ex |> ignore
                 | _ as ex -> reraise()
             )
-    )
+    )*)
 
 [<CompiledName("Analyse")>]
-let public analyse (lookahead: AnalyseSet) (parserResult: ParserResult) (checkpoints: SymbolsList) =
+let public analyse (analyseSet: AnalyseSet) (parserResult: ParserResult) (checkpoints: SymbolsList) =
+    let new_index = parserResult.Symbols.Add(analyseSet.EOF.Name)
     let context = { 
-        Datas = lookahead
-        Symbols = parserResult.Symbols |> List.ofSeq
-        Parsed = parserResult.Parsed |> List.ofSeq
+        AnalyseSet = analyseSet
+        Symbols = (parserResult.Symbols |> List.ofSeq)
+        Parsed = (parserResult.Parsed |> List.ofSeq)@[new ParsedToken(new_index, 0)]
         ErrorCheckpoint = checkpoints |> List.ofSeq
         CurrentIndex = 0
         SyntaxError = false
         SyntaxExceptionsList = []
         RegexExceptionsList = []
     }
-    let rules = lookahead.Rules |> List.ofSeq |> List.filter (fun rr -> rr.Rule.Token.Index = lookahead.Axiom )
 
     let mutable endOfFileStatus = EndOfFileStatus.Valid
     try
-        (context, rules) ||> analyseRules
+        context |> compute_sequence ((new NonTerminal(analyseSet.Axiom, -1))::(new Terminal(analyseSet.EOF.Index, -1))::[]) |> ignore
     with
     | :? UnexpectedEndOfFileException as ex -> endOfFileStatus <- EndOfFileStatus.Failed
 
 (*    match context.Parsed.Count with
     | i when i = context.CurrentIndex -> ()
-    | _ -> endOfFileStatus <- Failed*)
+    | _ -> endOfFileStatus <- Failed *)
 
     {
         SyntaxExceptions = context.SyntaxExceptionsList

@@ -17,7 +17,7 @@ internal class Program
     private static void SourceCodeAnalysis()
     {
         var syntaxparser = new SyntaxParser();
-        var grammar = syntaxparser.ParseFile("../../../Resources/SimpleCGrammar.txt");
+        var grammar = syntaxparser.ParseFile("../../../Resources/TestGrammar.txt");
         LL1Parser.Parse(grammar);
         var analyseSet = LL1AnalyseSet.GetLookAheadSet(grammar);
 
@@ -53,7 +53,7 @@ internal class Program
         foreach (var syntaxException in analyseResult.SyntaxExceptions)
         {
             error = true;
-            Console.WriteLine($"Syntax error at line {syntaxException.Data0.Line}: expected {grammar.Terminals[syntaxException.Data1.Index].Name} but found { parserResult.Symbols[syntaxException.Data0.TokenIndex].Name }.");
+            Console.WriteLine($"Syntax error at line {syntaxException.Data0.Line}: unexpected symbol { parserResult.Symbols[syntaxException.Data0.TokenIndex].Name }.");
         }
         foreach (var regexException in analyseResult.RegexExceptions)
         {

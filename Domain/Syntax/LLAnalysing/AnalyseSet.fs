@@ -10,8 +10,14 @@ type EnrichedRule = {
     Symbols : int list
 }
 
+type EOF_Type = {
+    Name: string
+    Index: int
+}
+
 type AnalyseSet = {
     Axiom: int
+    EOF: EOF_Type
     Terminals: Symbol list
     NonTerminals: Symbol list
     Rules: EnrichedRule list
@@ -54,6 +60,7 @@ let public get_lookahead_set (g: Grammar) =
     let regexs = g.RegularExpressions |> List.ofSeq
     {
         Axiom = g.Axiom
+        EOF = { Name = "EOF"; Index = g.Terminals.Count - 1 }
         Terminals = g.Terminals |> List.ofSeq
         NonTerminals = g.NonTerminals |> List.ofSeq
         Rules = rules |> compute_rules empty_generators firsts follows;

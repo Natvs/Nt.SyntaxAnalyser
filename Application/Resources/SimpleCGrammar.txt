@@ -1,9 +1,8 @@
 ﻿N = {ROOT, VALUE, TYPE, INT, IDENT, TEST}
 T = {=, ", ;, var, a}
 
-S = TEST
+S = ROOT
 
-R: TEST -> a ;
 R: ROOT -> var IDENT = INT \; ;
 R: VALUE -> " IDENT " | IDENT | INT ;
 

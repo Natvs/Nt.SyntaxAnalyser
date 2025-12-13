@@ -51,7 +51,7 @@ let rec private compute_regex (regexs: RegularExpression list) =
     | [] -> []
     | rg::tail -> rg::(tail |> compute_regex)
 
-[<CompiledName("GetLookAheadSet")>]
+[<CompiledName("Get")>]
 let public get_lookahead_set (g: Grammar) =
     let empty_generators = g |> EmptyAnalyser.get_empty_generators
     let firsts = (g, empty_generators) ||> FirstsAnalyser.get_firsts

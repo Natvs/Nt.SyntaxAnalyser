@@ -18,8 +18,9 @@ internal class Program
     {
         var syntaxparser = new SyntaxParser();
         var grammar = syntaxparser.ParseFile("../../../Resources/TestGrammar.txt");
+        var checkpoints = new SymbolsList([";"]);
         LL1Parser.Parse(grammar);
-        var analyseSet = LL1AnalyseSet.GetLookAheadSet(grammar);
+        var analyseSet = LL1AnalyseSet.Get(grammar);
 
         bool continue_analysis = true;
         while (continue_analysis)
@@ -33,8 +34,7 @@ internal class Program
                 text = Console.ReadLine();
                 if (text != "end") input += text + "\n";
             }
-            var checkpoints = new SymbolsList([";"]);
-            var parserResult = parser.Parse(input);  
+            var parserResult = parser.Parse(input);
             var analyseResult = LL1Analyser.Analyse(analyseSet, parserResult, checkpoints);
             PrintAnalyseResult(grammar, parserResult, analyseResult);
 

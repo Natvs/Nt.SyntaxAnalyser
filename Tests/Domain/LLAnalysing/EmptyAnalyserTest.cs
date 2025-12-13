@@ -25,7 +25,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
         [Fact]
         public void EmptyGenerator_test1()
         {
-            var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/empty_test1.txt");
+            var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/Empty/empty_test1.txt");
 
             Assert.Empty(emptygenerators);
         }
@@ -33,7 +33,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
         [Fact]
         public void EmptyGenerator_test2()
         {
-            var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/empty_test2.txt");
+            var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/Empty/empty_test2.txt");
 
             Assert.Single(emptygenerators);
             Assert.Contains(0, emptygenerators);
@@ -42,7 +42,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
         [Fact]
         public void EmptyGenerator_test3()
         {
-            var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/empty_test3.txt");
+            var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/Empty/empty_test3.txt");
 
             Assert.Single(emptygenerators);
             Assert.Contains(1, emptygenerators);
@@ -51,7 +51,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
         [Fact]
         public void EmptyGenertor_test4()
         {
-            var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/empty_test4.txt");
+            var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/Empty/empty_test4.txt");
 
             Assert.Equal(2, emptygenerators.Count);
             Assert.Contains(0, emptygenerators);
@@ -61,7 +61,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
         [Fact]
         public void EmptyGenertor_test5()
         {
-            var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/empty_test5.txt");
+            var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/Empty/empty_test5.txt");
 
             Assert.Single(emptygenerators);
             Assert.Contains(1, emptygenerators);

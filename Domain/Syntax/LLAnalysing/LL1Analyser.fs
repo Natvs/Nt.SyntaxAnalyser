@@ -56,12 +56,12 @@ let rec private goToNextCheckpoint(context: AnalyserContext) =
     | false -> context |> read |> goToNextCheckpoint
 
 let private handleSyntaxException (ex: SyntaxException) (context: AnalyserContext) =
-    context.SyntaxExceptionsList <- ex::context.SyntaxExceptionsList
+    context.SyntaxExceptionsList <- context.SyntaxExceptionsList@[ex]
     context.SyntaxError <- true
     context |> goToNextCheckpoint
 
 let private handleRegexException (ex: RegexException) (context: AnalyserContext) =
-    context.RegexExceptionsList <- ex::context.RegexExceptionsList
+    context.RegexExceptionsList <- context.RegexExceptionsList@[ex]
     context.SyntaxError <- true
     context |> goToNextCheckpoint
 
@@ -73,18 +73,24 @@ let private isRegExSymbol (token: GrammarToken) (context: AnalyserContext) =
     context.AnalyseSet.RegEx 
     |> List.exists (fun e -> e.Token.Index = token.Index)
 
-let private handleTerminal (term: Terminal) (context: AnalyserContext) =
+let rec private handleTerminal (term: Terminal) (context: AnalyserContext) =
     let parsed = context.Parsed[context.CurrentIndex];
-    match context.SyntaxError, context.Symbols[parsed.TokenIndex].Name with
-    | true, _ when term |> isCheckPoint context -> context |> resetSyntaxException |> ignore
-    | _, s when s <> context.AnalyseSet.Terminals[term.Index].Name -> 
-        try
-            raise (SyntaxException(parsed))
-        with
-            | :? SyntaxException as ex -> context |> handleSyntaxException ex |> ignore
-    | _ -> ()
-    if (context.CurrentIndex < context.Parsed.Length-1) then context |> read
-    else context
+    if context.SyntaxError
+    then
+        if term |> isCheckPoint context 
+        then context |> resetSyntaxException |> handleTerminal term
+        else context
+    else
+        match context.Symbols[parsed.TokenIndex].Name with
+        | s when s <> context.AnalyseSet.Terminals[term.Index].Name -> 
+            try
+                raise (SyntaxException(parsed))
+            with
+                | :? SyntaxException as ex -> context |> handleSyntaxException ex |> ignore
+        | _ -> ()
+        if (context.CurrentIndex < context.Parsed.Length-1)
+        then context |> read 
+        else context
 
 let private handleRegex (nonterm: NonTerminal) (context: AnalyserContext) =
     let parsed = context.Parsed[context.CurrentIndex];
@@ -128,30 +134,6 @@ and private handle_non_terminal (index :int) (context : AnalyserContext) =
         with
         | :? SyntaxException as ex -> context |> handleSyntaxException ex |> ignore
     context
-    (*|> List.iter (fun r ->   
-        
-        match (r, context) ||> isRuleMatching token with
-        | false ->
-            try
-                raise (SyntaxException(token, new Terminal(0, 0)))
-            with
-            | :? SyntaxException as ex -> context |> handleSyntaxException ex |> ignore
-        | true ->
-            r.Rule.Derivation
-            |> List.ofSeq
-            |> List.iter (fun symbol -> 
-                try
-                    match symbol with
-                    | :? NonTerminal as nonterm when context |> isRegExSymbol symbol -> context |>  handleRegex token nonterm |> ignore         
-                    | :? NonTerminal -> analyseRules context (context.Datas.Rules |> List.ofSeq |> List.filter (fun rr -> rr.Rule.Token.Index = symbol.Index ))
-                    | :? Terminal as term -> context |> handleTerminal token term |> ignore
-                    | _ -> raise (UnknownSymbolType symbol)
-                with
-                | :? SyntaxException as ex -> context |> handleSyntaxException ex |> ignore
-                | :? RegexException as ex -> context |> handleRegexException ex |> ignore
-                | _ as ex -> reraise()
-            )
-    )*)
 
 [<CompiledName("Analyse")>]
 let public analyse (analyseSet: AnalyseSet) (parserResult: ParserResult) (checkpoints: SymbolsList) =
@@ -172,10 +154,6 @@ let public analyse (analyseSet: AnalyseSet) (parserResult: ParserResult) (checkp
         context |> compute_sequence ((new NonTerminal(analyseSet.Axiom, -1))::(new Terminal(analyseSet.EOF.Index, -1))::[]) |> ignore
     with
     | :? UnexpectedEndOfFileException as ex -> endOfFileStatus <- EndOfFileStatus.Failed
-
-(*    match context.Parsed.Count with
-    | i when i = context.CurrentIndex -> ()
-    | _ -> endOfFileStatus <- Failed *)
 
     {
         SyntaxExceptions = context.SyntaxExceptionsList

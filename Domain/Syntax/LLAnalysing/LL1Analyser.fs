@@ -106,7 +106,7 @@ let private handleRegex (index: int) (context: AnalyserContext) =
         
 let rec private compute_sequence (sequence: GrammarToken list) (context: AnalyserContext) =
     match sequence with
-    | [] -> ()
+    | [] -> context
     | (:? Terminal as term)::tail -> 
         context
         |> handleTerminal term
@@ -121,10 +121,11 @@ and private handle_non_terminal (index :int) (context : AnalyserContext) =
     let parsed = context.Parsed[context.CurrentIndex]
     if context.AnalyseSet.Rules |> List.exists (fun r -> r.Token.Index = index) then
         // Handles the case where a rule exists
-        try
-            if context.AnalyseSet.Terminals |> List.exists (fun s -> context.Symbols[parsed.TokenIndex].Name = s.Name) = false
-            then raise (SyntaxException(parsed))
-
+        if context.AnalyseSet.Terminals |> List.exists (fun s -> context.Symbols[parsed.TokenIndex].Name = s.Name) = false
+        then
+            let rule = context.AnalyseSet.Rules |> List.find(fun r -> r.Token.Index = index)
+            context |> compute_sequence rule.Derivation
+        else
             let terminal_index =
                 context.AnalyseSet.Terminals
                 |> List.findIndex (fun s -> context.Symbols[parsed.TokenIndex].Name = s.Name)
@@ -136,15 +137,10 @@ and private handle_non_terminal (index :int) (context : AnalyserContext) =
             if rules.Length = 0 then
                 context |> handleRegex index
             elif rules.Length = 1 then
-                rules |> List.iter (fun r -> 
-                    context
-                    |> compute_sequence (r.Derivation)
-                )
-                context
+                let rule = rules.Head
+                context |> compute_sequence rule.Derivation
             else
                 raise AmbiguousGrammar
-        with
-        | :? SyntaxException as ex -> context |> handleSyntaxException ex
     elif context.AnalyseSet.RegEx |> List.exists (fun rg -> rg.Token.Index = index) then
         // Handles the case where there are no rules but a regular expression
         context |> handleRegex index

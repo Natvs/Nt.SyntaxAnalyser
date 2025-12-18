@@ -1,15 +1,21 @@
 ﻿module Nt.Syntax.LLAnalysing.LL1Analyser
 
 open System.Text.RegularExpressions
+open System.Collections.Generic
 open Nt.Parsing
 open Nt.Parsing.Structures
 open Nt.Syntax.Structures
 open Nt.Syntax.LLAnalysing.LL1AnalyseSet
 
+// Exceptions handled by the analyser
 exception public SyntaxException of ParsedToken
 exception public RegexException of ParsedToken * string
-exception public UnknownSymbolType of GrammarToken
 exception public UnexpectedEndOfFileException
+
+// Exceptions the analyser can trigger
+exception public AmbiguousGrammar
+exception public RuleNotFound of Symbol
+exception public UnknownSymbolType of GrammarToken
 
 type private AnalyserContext = {
     AnalyseSet : AnalyseSet
@@ -69,12 +75,8 @@ let private resetSyntaxException (context : AnalyserContext) =
     context.SyntaxError <- false
     context
 
-let private isRegExSymbol (token: GrammarToken) (context: AnalyserContext) =
-    context.AnalyseSet.RegEx 
-    |> List.exists (fun e -> e.Token.Index = token.Index)
-
 let rec private handleTerminal (term: Terminal) (context: AnalyserContext) =
-    let parsed = context.Parsed[context.CurrentIndex];
+    let parsed = context.Parsed[context.CurrentIndex]
     if context.SyntaxError
     then
         if term |> isCheckPoint context 
@@ -92,16 +94,24 @@ let rec private handleTerminal (term: Terminal) (context: AnalyserContext) =
         then context |> read 
         else context
 
-let private handleRegex (nonterm: NonTerminal) (context: AnalyserContext) =
-    let parsed = context.Parsed[context.CurrentIndex];
-    let regex =
-        context.AnalyseSet.RegEx
-        |> List.find(fun e -> e.Token.Index = nonterm.Index)
-    match context.SyntaxError, context.Symbols[parsed.TokenIndex].Name with
-    | false, s when (s, regex.Pattern) |> Regex.IsMatch = false -> raise (RegexException (parsed, regex.Pattern))
-    | _ -> ()
-    context |> read
-
+let private handleRegex (index: int) (context: AnalyserContext) =
+    let parsed = context.Parsed[context.CurrentIndex]
+    if context.SyntaxError
+    then 
+        context
+    else
+        try 
+            if context.AnalyseSet.RegEx |> List.exists (fun rg ->
+                rg.Token.Index = index &&
+                let regex = Regex(rg.Pattern) in regex.IsMatch(context.Symbols[parsed.TokenIndex].Name)
+            ) = false then
+                raise (SyntaxException parsed)            
+        with
+        | :? SyntaxException as ex -> context |> handleSyntaxException ex |> ignore
+        if (context.CurrentIndex < context.Parsed.Length - 1)
+        then context |> read
+        else context
+        
 let rec private compute_sequence (sequence: GrammarToken list) (context: AnalyserContext) =
     match sequence with
     | [] -> ()
@@ -117,23 +127,37 @@ let rec private compute_sequence (sequence: GrammarToken list) (context: Analyse
 
 and private handle_non_terminal (index :int) (context : AnalyserContext) =
     let parsed = context.Parsed[context.CurrentIndex]
-    if (context.AnalyseSet.Terminals |> List.exists (fun t -> context.Symbols[parsed.TokenIndex].Name = t.Name))
-        then
-        let terminal_index =
-            context.AnalyseSet.Terminals
-            |> List.findIndex (fun s -> context.Symbols[parsed.TokenIndex].Name = s.Name)
-        context.AnalyseSet.Rules
-        |> List.filter (fun r -> r.Rule.Token.Index = index && r.Symbols |> List.contains terminal_index)
-        |> List.iter (fun r-> 
-            context
-            |> compute_sequence (r.Rule.Derivation |> List.ofSeq)
-        )
-    else 
+    if context.AnalyseSet.Rules |> List.exists (fun r -> r.Token.Index = index) then
+        // Handles the case where a rule exists
         try
-            raise (SyntaxException(parsed))
+            if context.AnalyseSet.Terminals |> List.exists (fun s -> context.Symbols[parsed.TokenIndex].Name = s.Name) = false
+            then raise (SyntaxException(parsed))
+
+            let terminal_index =
+                context.AnalyseSet.Terminals
+                |> List.findIndex (fun s -> context.Symbols[parsed.TokenIndex].Name = s.Name)
+
+            let rules =
+                context.AnalyseSet.Rules
+                |> List.filter (fun r -> r.Token.Index = index && r.DirectiveSymbols |> List.contains terminal_index)
+
+            if rules.Length = 0 then
+                context |> handleRegex index
+            elif rules.Length = 1 then
+                rules |> List.iter (fun r -> 
+                    context
+                    |> compute_sequence (r.Derivation)
+                )
+                context
+            else
+                raise AmbiguousGrammar
         with
-        | :? SyntaxException as ex -> context |> handleSyntaxException ex |> ignore
-    context
+        | :? SyntaxException as ex -> context |> handleSyntaxException ex
+    elif context.AnalyseSet.RegEx |> List.exists (fun rg -> rg.Token.Index = index) then
+        // Handles the case where there are no rules but a regular expression
+        context |> handleRegex index
+    else
+        raise (RuleNotFound context.AnalyseSet.NonTerminals[index])
 
 [<CompiledName("Analyse")>]
 let public analyse (analyseSet: AnalyseSet) (parserResult: ParserResult) (checkpoints: SymbolsList) =

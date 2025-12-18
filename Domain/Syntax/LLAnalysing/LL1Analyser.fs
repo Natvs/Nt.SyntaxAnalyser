@@ -9,7 +9,6 @@ open Nt.Syntax.LLAnalysing.LL1AnalyseSet
 
 // Exceptions handled by the analyser
 exception public SyntaxException of ParsedToken
-exception public RegexException of ParsedToken * string
 exception public UnexpectedEndOfFileException
 
 // Exceptions the analyser can trigger
@@ -25,7 +24,6 @@ type private AnalyserContext = {
     mutable CurrentIndex : int
     mutable SyntaxError: bool
     mutable SyntaxExceptionsList : SyntaxException list
-    mutable RegexExceptionsList : RegexException list
 }
 
 type public EndOfFileStatus =
@@ -34,7 +32,6 @@ type public EndOfFileStatus =
 
 type public AnalyseResult = {
     SyntaxExceptions: SyntaxException list
-    RegexExceptions: RegexException list
     EndOfFileStatus: EndOfFileStatus
 }
 
@@ -66,11 +63,6 @@ let private handleSyntaxException (ex: SyntaxException) (context: AnalyserContex
     context.SyntaxError <- true
     context |> goToNextCheckpoint
 
-let private handleRegexException (ex: RegexException) (context: AnalyserContext) =
-    context.RegexExceptionsList <- context.RegexExceptionsList@[ex]
-    context.SyntaxError <- true
-    context |> goToNextCheckpoint
-
 let private resetSyntaxException (context : AnalyserContext) =
     context.SyntaxError <- false
     context
@@ -83,16 +75,16 @@ let rec private handleTerminal (term: Terminal) (context: AnalyserContext) =
         then context |> resetSyntaxException |> handleTerminal term
         else context
     else
-        match context.Symbols[parsed.TokenIndex].Name with
-        | s when s <> context.AnalyseSet.Terminals[term.Index].Name -> 
-            try
-                raise (SyntaxException(parsed))
-            with
-                | :? SyntaxException as ex -> context |> handleSyntaxException ex |> ignore
-        | _ -> ()
-        if (context.CurrentIndex < context.Parsed.Length-1)
-        then context |> read 
-        else context
+        try
+            match context.Symbols[parsed.TokenIndex].Name with
+            | s when s <> context.AnalyseSet.Terminals[term.Index].Name -> 
+                    raise (SyntaxException(parsed))
+            | _ -> ()
+            if (context.CurrentIndex < context.Parsed.Length-1)
+            then context |> read 
+            else context
+        with
+        | :? SyntaxException as ex -> context |> handleSyntaxException ex
 
 let private handleRegex (index: int) (context: AnalyserContext) =
     let parsed = context.Parsed[context.CurrentIndex]
@@ -105,12 +97,12 @@ let private handleRegex (index: int) (context: AnalyserContext) =
                 rg.Token.Index = index &&
                 let regex = Regex(rg.Pattern) in regex.IsMatch(context.Symbols[parsed.TokenIndex].Name)
             ) = false then
-                raise (SyntaxException parsed)            
+                raise (SyntaxException parsed)       
+            if (context.CurrentIndex < context.Parsed.Length - 1)
+            then context |> read
+            else context
         with
-        | :? SyntaxException as ex -> context |> handleSyntaxException ex |> ignore
-        if (context.CurrentIndex < context.Parsed.Length - 1)
-        then context |> read
-        else context
+        | :? SyntaxException as ex -> context |> handleSyntaxException ex
         
 let rec private compute_sequence (sequence: GrammarToken list) (context: AnalyserContext) =
     match sequence with
@@ -170,7 +162,6 @@ let public analyse (analyseSet: AnalyseSet) (parserResult: ParserResult) (checkp
         CurrentIndex = 0
         SyntaxError = false
         SyntaxExceptionsList = []
-        RegexExceptionsList = []
     }
 
     let mutable endOfFileStatus = EndOfFileStatus.Valid
@@ -181,6 +172,5 @@ let public analyse (analyseSet: AnalyseSet) (parserResult: ParserResult) (checkp
 
     {
         SyntaxExceptions = context.SyntaxExceptionsList
-        RegexExceptions = context.RegexExceptionsList
         EndOfFileStatus = endOfFileStatus
     }

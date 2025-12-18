@@ -55,11 +55,6 @@ internal class Program
             error = true;
             Console.WriteLine($"Syntax error at line {syntaxException.Data0.Line}: unexpected symbol { parserResult.Symbols[syntaxException.Data0.TokenIndex].Name }.");
         }
-        foreach (var regexException in analyseResult.RegexExceptions)
-        {
-            error = true;
-            Console.WriteLine($"Syntax error at line {regexException.Data0.Line}: string {parserResult.Symbols[regexException.Data0.TokenIndex].Name } does not match the pattern {regexException.Data1}");
-        }
         if (analyseResult.EndOfFileStatus == LL1Analyser.EndOfFileStatus.Failed)
         {
             error = true;

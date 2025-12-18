@@ -1,0 +1,8 @@
+﻿N = {A, IDENT, INT}
+T = {var, ;, =}
+
+S = A
+
+R: A -> var IDENT = INT \; ;
+E: IDENT = [a-zA-Z_]+ ;
+E: INT = [1-9][0-9]* ;

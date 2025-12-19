@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Syntax\Utils.fs" />
     <Compile Include="Syntax\Comparator.fs" />
     <Compile Include="Syntax\LLAnalysing\Utils.fs" />
     <Compile Include="Syntax\LLAnalysing\EmptyAnalyser.fs" />
@@ -16,13 +15,15 @@
     <Compile Include="Syntax\LLAnalysing\FollowsAnalyser.fs" />
     <Compile Include="Syntax\LLAnalysing\AnalyseSet.fs" />
     <Compile Include="Syntax\LLAnalysing\LL1Analyser.fs" />
+    <Compile Include="Syntax\LLParsing\Utils.fs" />
+    <Compile Include="Syntax\LLParsing\RegexMerge.fs" />
     <Compile Include="Syntax\LLParsing\Factorisation.fs" />
     <Compile Include="Syntax\LLParsing\Derecursivation.fs" />
     <Compile Include="Syntax\LLParsing\LL1Parser.fs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Prod.Nt.SyntaxParser" Version="1.0.4" />
+    <PackageReference Include="Prod.Nt.SyntaxParser" Version="1.0.5" />
   </ItemGroup>
 
 </Project>

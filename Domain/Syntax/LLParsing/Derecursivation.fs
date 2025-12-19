@@ -2,7 +2,7 @@
 
 open Nt.Parsing.Structures
 open Nt.Syntax.Structures
-open Nt.Syntax.Utils
+open Nt.Syntax.LLParsing.Utils
 
 let private need_direct_derecursivation (rules: Rule list) (s:int): bool =
     rules
@@ -14,8 +14,8 @@ let private need_direct_derecursivation (rules: Rule list) (s:int): bool =
 [<CompiledName("EliminateDirectRecursivity")>]
 let public eliminate_direct_recursivity (s: int) (g:Grammar) =
     "_rec" 
-    |> extend_token g.NonTerminals s 
-    |> add_to_tokens g.NonTerminals 
+    |> extend_symbol g.NonTerminals s 
+    |> add_to_symbols g.NonTerminals
     |> ignore
     let newindex = g.NonTerminals.Count - 1
     let rules = List.ofSeq(g.Rules)
@@ -32,7 +32,7 @@ let public eliminate_direct_recursivity (s: int) (g:Grammar) =
         g.Rules.Remove(r) |> ignore
         r.Derivation
         |> List.ofSeq
-        |> remove_first_symbol
+        |> remove_first_token
         |> create_rule g.Terminals g.NonTerminals newindex
         |> add_non_terminal_to_derivation newindex
         |> add_rule_to_grammar g
@@ -68,11 +68,18 @@ let public eliminate_indirect_recursivity (axiom: int) (firsttoken: int) (g: Gra
 [<CompiledName("EliminateRecursivity")>]
 let public eliminate_recursivity (g: Grammar) =
     let nonTerminals = g.NonTerminals |> List.ofSeq
+    let regex_symbols =
+        g.RegularExpressions
+        |> List.ofSeq
+        |> List.map (fun rg -> rg.Token.Index)
+        |> List.distinct
+        |> List.map (fun index -> g.NonTerminals[index].Name)
 
     nonTerminals |> List.map(fun (t: Symbol) ->
         let current_index = g.NonTerminals.IndexOf t
         nonTerminals
-        |> List.filter(fun (nt: Symbol) -> (g.NonTerminals.IndexOf nt.Name) < current_index)
+        |> List.filter(fun nt -> (g.NonTerminals.IndexOf nt.Name) < current_index)
+        |> List.filter(fun nt -> (regex_symbols |> List.contains nt.Name) = false)
         |> List.map(fun (pt: Symbol) ->
             let compare_index = g.NonTerminals.IndexOf pt
             eliminate_indirect_recursivity current_index compare_index g)

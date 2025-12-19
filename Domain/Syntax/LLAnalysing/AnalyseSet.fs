@@ -47,9 +47,20 @@ let get_enriched_rule (empty_generators: int list) (firsts: int list list) (foll
                 |> get_sequence_firsts empty_generators firsts
             { Token = rule.Token; Derivation = rule.Derivation |> List.ofSeq; DirectiveSymbols = directive_symbols }
 
+let rec get_sub_enriched_regex (pattern: char list) (depth: int) =
+    match depth, pattern with
+    | _, [] -> []
+    | 0, '|'::tail -> '$'::'|'::'^'::(get_sub_enriched_regex tail depth)
+    | _, '('::tail -> '('::(get_sub_enriched_regex tail (depth + 1))
+    | _, ')'::tail -> ')'::(get_sub_enriched_regex tail (depth - 1))
+    | _, c::tail -> c::(get_sub_enriched_regex tail depth) 
+
 let get_enriched_regex (regex: RegularExpression) =
-    { Token = regex.Token; Pattern = "^" + regex.Pattern + "$" }
-    
+    let new_pattern =
+        get_sub_enriched_regex (regex.Pattern |> List.ofSeq) 0
+        |> List.toArray
+        |> System.String
+    { Token = regex.Token; Pattern = "^" + new_pattern + "$" }
 
 let rec private compute_rules (empty_generators: int list) (firsts: int list list) (follows: int list list) (rules: Rule list) =
     match rules with

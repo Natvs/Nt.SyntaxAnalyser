@@ -1,7 +1,7 @@
 ﻿module Nt.Syntax.LLParsing.Factorisation
 
 open Nt.Syntax.Structures
-open Nt.Syntax.Utils
+open Nt.Syntax.LLParsing.Utils
 
 exception public EmptyPatternException of string
 exception public PatternNotFoundException of string
@@ -38,13 +38,13 @@ let private has_common_pattern (rules: Rule list) (rule: Rule) : bool =
 
 /// Given a set of rules, returns true if at least one of the rules should be factorised
 let private need_factorisation (rules: Rule list): bool =
-    let mylist =
+    if rules.Length > 1 then
         rules
         |> List.filter(fun r -> r.Derivation.Count > 0)
         |> List.map(fun r -> r |> has_common_pattern (rules |> List.except (r::[])) )
+        |> List.contains(true)
+    else false
 
-    mylist
-    |> List.contains(true)
 
 /// For a given list of rules with the same symbol, returns the smallest common pattern shared with the reference
 let rec private get_rules_common_pattern (reference: Rule) (rules : Rule list): GrammarToken list =
@@ -95,14 +95,15 @@ let rec public factorise_rules (g: Grammar) (rules: Rule list): Grammar =
 
     (*Creates the new non-terminal used as new rules symbol*)
     "_fact"
-    |> extend_token g.NonTerminals reference.Token.Index
-    |> add_to_tokens g.NonTerminals
+    |> extend_symbol g.NonTerminals reference.Token.Index
+    |> add_to_symbols g.NonTerminals
     |> ignore
     let new_index = g.NonTerminals.Count - 1
 
     (*Removes the rules to factorise from grammar*)
     factorised_rules 
-    |> List.iter(fun r -> g.Rules.Remove r |> ignore)
+    |> remove_rules_from_grammar g
+    |> ignore
 
     (*Creates the common pattern rule*)
     common_pattern

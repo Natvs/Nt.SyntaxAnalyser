@@ -1,7 +1,7 @@
 ﻿module Nt.Syntax.LLAnalysing.LL1Analyser
 
 open System.Text.RegularExpressions
-open System.Collections.Generic
+
 open Nt.Parsing
 open Nt.Parsing.Structures
 open Nt.Syntax.Structures

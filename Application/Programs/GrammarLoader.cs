@@ -70,7 +70,7 @@ namespace Nt.SyntaxAnalyser.Application.Programs
             {
                 try
                 {
-                    string fileContent = System.IO.File.ReadAllText(customPath);
+                    string fileContent = File.ReadAllText(customPath);
                     Grammar grammar = generator.ParseString(fileContent);
                     LL1Parser.Parse(grammar);
                     Console.WriteLine("\nLoaded and parsed grammar:\n" + grammar.ToString());

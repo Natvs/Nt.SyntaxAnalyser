@@ -1,21 +1,20 @@
 ﻿module Nt.Syntax.LLParsing.RegexMerge
 
-open Nt.Parsing.Structures
 open Nt.Syntax.Structures
 open Nt.Syntax.LLParsing.Utils
 
-exception public EmptyPattern
-exception public EmptyName
+exception public EmptyRegExPatternException
+exception public EmptyRegExNameException
 
 let rec private merge_patterns (patterns: string list) =
     match patterns with
-    | [] -> raise(EmptyPattern)
+    | [] -> raise(EmptyRegExPatternException)
     | pattern::[] -> pattern
     | pattern::tail -> pattern + "|" + (tail |> merge_patterns)
 
 let rec private merge_names (names: string list) =
     match names with
-    | [] -> raise(EmptyName)
+    | [] -> raise(EmptyRegExNameException)
     | name::[] -> name
     | name::tail -> name + "_" + (tail |> merge_names)
 

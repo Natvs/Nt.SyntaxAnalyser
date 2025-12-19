@@ -13,7 +13,7 @@ exception public UnexpectedEndOfFileException
 
 // Exceptions the analyser can trigger
 exception public AmbiguousGrammar
-exception public RuleNotFound of Symbol
+exception public RuleNotFoundException of Symbol
 exception public UnknownSymbolType of GrammarToken
 
 type private AnalyserContext = {
@@ -145,7 +145,7 @@ and private handle_non_terminal (index :int) (context : AnalyserContext) =
         // Handles the case where there are no rules but a regular expression
         context |> handleRegex index
     else
-        raise (RuleNotFound context.AnalyseSet.NonTerminals[index])
+        raise (RuleNotFoundException context.AnalyseSet.NonTerminals[index])
 
 [<CompiledName("Analyse")>]
 let public analyse (analyseSet: AnalyseSet) (parserResult: ParserResult) (checkpoints: SymbolsList) =

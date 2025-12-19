@@ -18,9 +18,8 @@ namespace Nt.SyntaxAnalyser.LLAnalysing.Tests
             var parser = new Parser(['\n', ' '], [";", "="]);
             var parserResult = parser.Parse(value);
 
-            var analyseSet = LL1AnalyseSet.Get(grammar);
-            var checkpoints = new SymbolsList([";"]);
-            var analyseResult = LL1Analyser.Analyse(analyseSet, parserResult, checkpoints);
+            var analyseSet = LL1AnalyseSet.Get(grammar, new SymbolsList([";"]));
+            var analyseResult = LL1Analyser.Analyse(analyseSet, parserResult);
 
             return new AnalyseResultWrapper(grammar, parserResult, analyseResult);
         }

@@ -20,12 +20,24 @@ using Nt.Syntax.LLAnalysing;
 var syntaxparser = new SyntaxParser();
 Grammar grammar = syntaxparser.ParseFile("path/to/grammar/file");
 LL1Parser.Parse(grammar);
-var analyseSet = LL1AnalyseSet.Get(grammar);
+var analyseSet = LL1AnalyseSet.Get(grammar, new SymbolsList([";"]));
 
 var input = File.ReadAllText("path/to/the/source/file");
 Parser parser = new Parser([' ', '\n'], ["{", "}", ";", "\""]);
-ParserResult parserResult = parser.Parse(input)
-LL1Analyser.AnalyseResult = LL1Analyser.Analyse(analyseSet, parserResult, new SymbolsList([";"]));
+ParserResult parserResult = parser.Parse(input);
+LL1Analyser.AnalyseResult = LL1Analyser.Analyse(analyseSet, parserResult);
+```
+
+or condensed in a few lines for a single use:
+
+```csharp
+var syntaxparser = new SyntaxParser();
+Parser parser = new Parser([' ', '\n'], ["{", "}", ";", "\""]);
+
+LL1Analyser.AnalyseResult = LL1Analyser.Analyse(
+    LL1AnalyseSet.Get(LL1Parser.Parse(syntaxparser.ParseFile("path/to/grammar/file")), new SymbolsList([";"])),
+    parser.Parse(File.ReadAllText("path/to/the/source/file"))
+);
 ```
 
 ## Advanced usage of the Syntax Analyser
@@ -54,8 +66,11 @@ Now, as a grammar needs some more computation before anaylsing any source file, 
 ```csharp
 using Nt.Syntax.LLAnalysing;
 
-var analyseSet = LL1AnalyseSet.Get(grammar);
+var checkpoints = new SymbolsList([";"]);
+var analyseSet = LL1AnalyseSet.Get(grammar, checkpoints);
 ```
+
+Note that `checkpoints` is a list of symbols to reach in case of errors, so that the analysing can continue. For instance, with a language with C syntax, these are usually `;` for the end of an expression and `}` for the end of a block.
 
 ### Prepare for analysing your source file
 
@@ -74,12 +89,11 @@ Please refer to [the parser documentation](https://github.com/Natvs/Nt.SyntaxPar
 
 The signature of the analyse method is
 ```csharp
-LLAnalyser.AnalyseResult Analyse(AnalyseSet analyseSet, ParserResult parserResult, SymbolsList checkpoints)
+LLAnalyser.AnalyseResult Analyse(AnalyseSet analyseSet, ParserResult parserResult)
 ```
 where
 - `analyseSet` is the set structure for analyse computed in the [step for setting up the grammar](#set-up-the-grammar).
 - `parserResult` is structure that contains the parsing results of the source file computed in the [previous step](#prepare-for-analysing-your-source-file)
-- `checkpoints` is a list of symbols to reach in case of errors, so that the analysing can continue. By instance, for a language with C syntax, these are `;` for the end of an expression and `}` for the end of a block.
 
 For the previously computed `grammar` and `parserResult`, you can call the analyse method like this:
 ```csharp
@@ -87,14 +101,13 @@ using Nt.Parsing.Structures;
 using Nt.Syntax.LLAnalysing;
 
 var checkpoints = new SymbolsList([";"]);
-LL1Analyser.AnalyseResult = LL1Analyser.Analyse(analyseSet, parserResult, checkpoints);
+LL1Analyser.AnalyseResult = LL1Analyser.Analyse(analyseSet, parserResult);
 ```
 
 The method return an `AnalyseResult` structure that contains datas about the analysis, including the list of errors encountered during the analysis.
 
 The fields of such structure are:
-- `SyntaxExceptions`: list of syntax exceptions encountered during the analysis. These exceptions are due to rules of the grammar not being respected in the source file, and does not contain exceptions involving regular expressions mismatches.
-- `RegexExceptions`: list of regular expression exceptions encountered during the analysis.
+- `SyntaxExceptions`: list of syntax exceptions encountered during the analysis. These exceptions are due to rules or regular expressions of the grammar not being respected in the source file.
 - `EndOfFileStatus`: status of the analyse once the end of file is reached.
 
 ## Exceptions

@@ -26,6 +26,7 @@ type AnalyseSet = {
     EOF: EOF_Type
     Terminals: Symbol list
     NonTerminals: Symbol list
+    Checkpoints: Symbol list
     Rules: EnrichedRule list
     RegEx: EnrichedRegex list
 }
@@ -73,7 +74,7 @@ let rec private compute_regex (regexs: RegularExpression list) =
     | rg::tail -> (rg |> get_enriched_regex)::(tail |> compute_regex)
 
 [<CompiledName("Get")>]
-let public get_lookahead_set (g: Grammar) =
+let public get_lookahead_set (g: Grammar) (checkpoints: SymbolsList) =
     let empty_generators = g |> EmptyAnalyser.get_empty_generators
     let firsts = (g, empty_generators) ||> FirstsAnalyser.get_firsts
     let follows = (g, empty_generators, firsts) |||> FollowsAnalyser.get_follows
@@ -82,6 +83,7 @@ let public get_lookahead_set (g: Grammar) =
         EOF = { Name = "EOF"; Index = g.Terminals.Count - 1 }
         Terminals = g.Terminals |> List.ofSeq
         NonTerminals = g.NonTerminals |> List.ofSeq
+        Checkpoints = checkpoints |> List.ofSeq
         Rules = g.Rules |> List.ofSeq |> compute_rules empty_generators firsts follows;
         RegEx = g.RegularExpressions |> List.ofSeq |> compute_regex
     }

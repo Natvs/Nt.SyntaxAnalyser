@@ -17,7 +17,11 @@ exception public RuleNotFoundException of Symbol
 exception public UnknownSymbolType of GrammarToken
 
 type private AnalyserContext = {
-    AnalyseSet : AnalyseSet
+    Terminals: Symbol list
+    NonTerminals: Symbol list
+    EOF: EOF_Type
+    Rules: EnrichedRule list
+    Regexs: EnrichedRegex list
     Symbols : Symbol list
     Parsed : ParsedToken list
     ErrorCheckpoint : Symbol list
@@ -42,7 +46,7 @@ let private isCurrentCheckPoint (context: AnalyserContext) =
     |> List.contains tokenString
 
 let private isCheckPoint (context: AnalyserContext) (token: GrammarToken) =
-    let tokenString = context.AnalyseSet.Terminals[token.Index].Name
+    let tokenString = context.Terminals[token.Index].Name
     context.ErrorCheckpoint 
     |> List.map (fun cp -> cp.Name)
     |> List.contains tokenString
@@ -77,7 +81,7 @@ let rec private handleTerminal (term: Terminal) (context: AnalyserContext) =
     else
         try
             match context.Symbols[parsed.TokenIndex].Name with
-            | s when s <> context.AnalyseSet.Terminals[term.Index].Name -> 
+            | s when s <> context.Terminals[term.Index].Name -> 
                     raise (SyntaxException(parsed))
             | _ -> ()
             if (context.CurrentIndex < context.Parsed.Length-1)
@@ -93,7 +97,7 @@ let private handleRegex (index: int) (context: AnalyserContext) =
         context
     else
         try 
-            if context.AnalyseSet.RegEx |> List.exists (fun rg ->
+            if context.Regexs |> List.exists (fun rg ->
                 rg.Token.Index = index &&
                 let regex = Regex(rg.Pattern) in regex.IsMatch(context.Symbols[parsed.TokenIndex].Name)
             ) = false then
@@ -119,19 +123,19 @@ let rec private compute_sequence (sequence: GrammarToken list) (context: Analyse
 
 and private handle_non_terminal (index :int) (context : AnalyserContext) =
     let parsed = context.Parsed[context.CurrentIndex]
-    if context.AnalyseSet.Rules |> List.exists (fun r -> r.Token.Index = index) then
+    if context.Rules |> List.exists (fun r -> r.Token.Index = index) then
         // Handles the case where a rule exists
-        if context.AnalyseSet.Terminals |> List.exists (fun s -> context.Symbols[parsed.TokenIndex].Name = s.Name) = false
+        if context.Terminals |> List.exists (fun s -> context.Symbols[parsed.TokenIndex].Name = s.Name) = false
         then
-            let rule = context.AnalyseSet.Rules |> List.find(fun r -> r.Token.Index = index)
+            let rule = context.Rules |> List.find(fun r -> r.Token.Index = index)
             context |> compute_sequence rule.Derivation
         else
             let terminal_index =
-                context.AnalyseSet.Terminals
+                context.Terminals
                 |> List.findIndex (fun s -> context.Symbols[parsed.TokenIndex].Name = s.Name)
 
             let rules =
-                context.AnalyseSet.Rules
+                context.Rules
                 |> List.filter (fun r -> r.Token.Index = index && r.DirectiveSymbols |> List.contains terminal_index)
 
             if rules.Length = 0 then
@@ -141,20 +145,24 @@ and private handle_non_terminal (index :int) (context : AnalyserContext) =
                 context |> compute_sequence rule.Derivation
             else
                 raise AmbiguousGrammar
-    elif context.AnalyseSet.RegEx |> List.exists (fun rg -> rg.Token.Index = index) then
+    elif context.Regexs |> List.exists (fun rg -> rg.Token.Index = index) then
         // Handles the case where there are no rules but a regular expression
         context |> handleRegex index
     else
-        raise (RuleNotFoundException context.AnalyseSet.NonTerminals[index])
+        raise (RuleNotFoundException context.NonTerminals[index])
 
 [<CompiledName("Analyse")>]
-let public analyse (analyseSet: AnalyseSet) (parserResult: ParserResult) (checkpoints: SymbolsList) =
+let public analyse (analyseSet: AnalyseSet) (parserResult: ParserResult) =
     let new_index = parserResult.Symbols.Add(analyseSet.EOF.Name)
     let context = { 
-        AnalyseSet = analyseSet
+        Terminals = analyseSet.Terminals |> List.ofSeq
+        NonTerminals = analyseSet.NonTerminals |> List.ofSeq
+        EOF = analyseSet.EOF
+        Rules = analyseSet.Rules |> List.ofSeq
+        Regexs = analyseSet.RegEx |> List.ofSeq
         Symbols = (parserResult.Symbols |> List.ofSeq)
         Parsed = (parserResult.Parsed |> List.ofSeq)@[new ParsedToken(new_index, 0)]
-        ErrorCheckpoint = checkpoints |> List.ofSeq
+        ErrorCheckpoint = analyseSet.Checkpoints |> List.ofSeq
         CurrentIndex = 0
         SyntaxError = false
         SyntaxExceptionsList = []

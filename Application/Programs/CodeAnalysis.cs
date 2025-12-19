@@ -1,13 +1,6 @@
 ﻿using Nt.Parsing.Structures;
 using Nt.Parsing;
 using Nt.Syntax.LLAnalysing;
-using Nt.Syntax.LLParsing;
-using Nt.Syntax;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Nt.Syntax.Structures;
 
 namespace Nt.SyntaxAnalyser.Application.Programs
@@ -18,7 +11,7 @@ namespace Nt.SyntaxAnalyser.Application.Programs
         public override void Execute()
         {
             var checkpoints = new SymbolsList([";"]);
-            var analyseSet = LL1AnalyseSet.Get(grammar);
+            var analyseSet = LL1AnalyseSet.Get(grammar, new SymbolsList([";"]));
 
             bool continue_analysis = true;
             while (continue_analysis)
@@ -33,7 +26,7 @@ namespace Nt.SyntaxAnalyser.Application.Programs
                     if (text != "end") input += text + "\n";
                 }
                 var parserResult = parser.Parse(input);
-                var analyseResult = LL1Analyser.Analyse(analyseSet, parserResult, checkpoints);
+                var analyseResult = LL1Analyser.Analyse(analyseSet, parserResult);
                 PrintAnalyseResult(grammar, parserResult, analyseResult);
 
                 continue_analysis = false;

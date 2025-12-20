@@ -15,7 +15,7 @@ namespace Nt.SyntaxAnalyser.Application.Programs
             var files = Directory.EnumerateFiles(".", "*.txt", SearchOption.AllDirectories);
             try
             {
-                if (files.Any()) DisplayCurrentFiles(files);
+                if (files.Any()) LoadExistingFile(files);
                 else LoadFromPath();
             }
             catch (Exception ex)
@@ -25,7 +25,7 @@ namespace Nt.SyntaxAnalyser.Application.Programs
             }
         }
 
-        private void DisplayCurrentFiles(IEnumerable<string> files)
+        private void LoadExistingFile(IEnumerable<string> files)
         {
             // Displays files in the current directory
             Console.WriteLine("Some files with .txt extension have been found in the current directory:");
@@ -80,8 +80,16 @@ namespace Nt.SyntaxAnalyser.Application.Programs
             string? customPath = Console.ReadLine();
             string fileContent = File.ReadAllText(customPath);
             Grammar grammar = generator.ParseString(fileContent);
+
+            // Displays loaded grammar
+            Transition();
+            Console.WriteLine("Loaded grammar:\n" + grammar.ToString());
+
+            // Parses the grammar
             LL1Parser.Parse(grammar);
+            Transition();
             Console.WriteLine("\nLoaded and parsed grammar:\n" + grammar.ToString());
+
             return grammar;
         }
     }

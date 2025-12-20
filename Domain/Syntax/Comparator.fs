@@ -32,10 +32,9 @@ let rec public compare_rules (r1: Rule) (r2: Rule) =
 
 [<CompiledName("CompareRules")>]
 let rec public compare_rules_set (l1: Rule list) (l2: Rule list) =
-    l1
-    |> List.forall(fun r1 -> 
-        l2
-        |> List.exists(fun r2 -> compare_rules r1 r2)
+    l1.Length = l2.Length &&
+    l1 |> List.forall(fun r1 -> 
+        l2 |> List.exists(fun r2 -> compare_rules r1 r2)
     )
 
 [<CompiledName("CompareRegExps")>]
@@ -46,10 +45,9 @@ let rec public compare_regexps (e1: RegularExpression) (e2: RegularExpression) =
 
 [<CompiledName("CompareRegExps")>]
 let rec public compare_regexps_set (l1: RegularExpression list) (l2: RegularExpression list) =
-    l1
-    |> List.forall(fun e1 ->
-        l2
-        |> List.exists(fun e2 -> compare_regexps e1 e2)
+    l1.Length = l2.Length &&
+    l1 |> List.forall(fun e1 ->
+        l2 |> List.exists(fun e2 -> compare_regexps e1 e2)
     )
 
 [<CompiledName("CompareGrammars")>]

@@ -1,10 +1,5 @@
 ﻿using Nt.Syntax.LLParsing;
 using Nt.Syntax;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nt.SyntaxAnalyser.Tests.Domain.LLParsing
 {
@@ -15,6 +10,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLParsing
             var parser = new SyntaxParser();
             var grammar = parser.ParseFile(rawpath);
             grammar = RegexMerge.Merge(grammar);
+            grammar = RulesEdition.RemoveDoubleRules(grammar);
 
             var result_grammar = parser.ParseFile(resultpath);
             Assert.True(Comparator.CompareGrammars(grammar, result_grammar));

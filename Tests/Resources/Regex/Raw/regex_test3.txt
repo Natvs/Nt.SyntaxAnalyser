@@ -1,4 +1,4 @@
-﻿N = {A, INT, IDENT, INT_IDENT}
+﻿N = {A, INT, IDENT}
 
 R: A -> INT ;
 R: A -> IDENT ;

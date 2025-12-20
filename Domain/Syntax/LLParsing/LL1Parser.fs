@@ -1,19 +1,11 @@
 ﻿module Nt.Syntax.LLParsing.LL1Parser
 
+open Nt.Syntax
 open Nt.Syntax.Structures
 open Nt.Syntax.LLParsing.Derecursivation
 open Nt.Syntax.LLParsing.Factorisation
 open Nt.Syntax.LLParsing.RegexMerge
-open Nt.Syntax.LLParsing.Utils
-
-let rec private eliminate_double_rules (rules: Rule list) (seen: string list) (g: Grammar) =
-    match rules with
-    | [] -> g
-    | rule::tail when seen |> List.contains (rule.ToString()) ->
-        rule::[] 
-        |> remove_rules_from_grammar g
-        |> eliminate_double_rules tail seen
-    | rule::tail -> g |> eliminate_double_rules tail ((rule.ToString())::seen)
+open Nt.Syntax.LLParsing.RulesEdition
 
 [<CompiledName("Parse")>]
 let parse(g: Grammar): Grammar =
@@ -21,4 +13,6 @@ let parse(g: Grammar): Grammar =
     |> eliminate_recursivity
     |> factorise
     |> merge_regexs
-    |> eliminate_double_rules (g.Rules |> List.ofSeq) []
+    |> eliminate_identical_rules
+    |> replace_unique_defined_non_terminals
+    |> eliminate_unused_rules (g.Rules |> List.ofSeq)

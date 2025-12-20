@@ -1,0 +1,12 @@
+﻿N = {DIGIT}
+
+E: DIGIT = 0 ;
+E: DIGIT = 1 ;
+E: DIGIT = 2 ;
+E: DIGIT = 3 ;
+E: DIGIT = 4 ;
+E: DIGIT = 5 ;
+E: DIGIT = 6 ;
+E: DIGIT = 7 ;
+E: DIGIT = 8 ;
+E: DIGIT = 9 ;

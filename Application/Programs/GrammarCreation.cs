@@ -22,11 +22,12 @@ namespace Nt.SyntaxAnalyser.Application.Programs
             }
             try
             {
+                // Creates a new grammar from the user's input
                 Grammar grammar = generator.ParseString(input);
-                LL1Parser.Parse(grammar);
-
                 Console.WriteLine();
                 Console.WriteLine("Grammar successfully created and parsed to LL1. Do you want to save it?");
+
+                // Saves the grammar
                 string? answer = Console.ReadLine();
                 if (answer != null && (answer.ToLower().Equals("y") || answer.ToLower().Equals("yes")))
                 {
@@ -42,11 +43,24 @@ namespace Nt.SyntaxAnalyser.Application.Programs
                         Console.WriteLine("Invalid file path. Grammar not saved.");
                     }
                 }
-                Program.SetNewMethod(new CodeAnalysis(Program, grammar));
+
+                // Displays the parsed grammar
+                Transition();
+                Console.WriteLine("Created grammar:\n" + grammar.ToString());
+
+                // Applies pre-analysis transformations to the grammar
+                LL1Parser.Parse(grammar);
+                Transition();
+                Console.WriteLine("Parsed grammar:\n" + grammar.ToString());
+
+                // Starts code analysis
+                var codeAnalysis = new CodeAnalysis(Program, grammar);
+                codeAnalysis.Execute();
             }
             catch (Exception ex)
             {
                 Console.WriteLine("\nError while parsing grammar:\n" + ex.Message);
+                Transition();
             }
         }
     }

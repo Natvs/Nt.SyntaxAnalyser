@@ -1,0 +1,44 @@
+﻿using Nt.Syntax.LLParsing;
+using Nt.Syntax;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Nt.SyntaxAnalyser.Tests.Domain.LLParsing
+{
+    public class RegexMergeTest
+    {
+        private static void TestMerge(string rawpath, string resultpath)
+        {
+            var parser = new SyntaxParser();
+            var grammar = parser.ParseFile(rawpath);
+            grammar = RegexMerge.Merge(grammar);
+
+            var result_grammar = parser.ParseFile(resultpath);
+            Assert.True(Comparator.CompareGrammars(grammar, result_grammar));
+        }
+
+        [Fact]
+        public void RegexMergeTest_fact_test1()
+        {
+            // Test a single factorisation
+            TestMerge("../../../Resources/Regex/Raw/regex_test1.txt", "../../../Resources/Regex/Result/regex_test1_result.txt");
+        }
+
+        [Fact]
+        public void RegexMergeTest_fact_test2()
+        {
+            // Test multiple factorisations
+            TestMerge("../../../Resources/Regex/Raw/regex_test2.txt", "../../../Resources/Regex/Result/regex_test2_result.txt");
+        }
+
+        [Fact]
+        public void RegexMergeTest_fact_test3()
+        {
+            // Test nested factorisations
+            TestMerge("../../../Resources/Regex/Raw/regex_test3.txt", "../../../Resources/Regex/Result/regex_test3_result.txt");
+        }
+    }
+}

@@ -10,7 +10,6 @@ namespace Nt.SyntaxAnalyser.Application.Programs
     {
         public override void Execute()
         {
-            var checkpoints = new SymbolsList([";"]);
             var analyseSet = LL1AnalyseSet.Get(grammar, new SymbolsList([";"]));
 
             bool continue_analysis = true;

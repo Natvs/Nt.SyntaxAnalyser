@@ -17,10 +17,8 @@ let rec private eliminate_double_rules (rules: Rule list) (seen: string list) (g
 
 [<CompiledName("Parse")>]
 let parse(g: Grammar): Grammar =
-    let rules = g.Rules |> List.ofSeq
-
     g
     |> eliminate_recursivity
     |> factorise
     |> merge_regexs
-    |> eliminate_double_rules rules []
+    |> eliminate_double_rules (g.Rules |> List.ofSeq) []

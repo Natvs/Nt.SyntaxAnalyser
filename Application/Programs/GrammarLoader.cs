@@ -13,24 +13,29 @@ namespace Nt.SyntaxAnalyser.Application.Programs
             Transition();
 
             var files = Directory.EnumerateFiles(".", "*.txt", SearchOption.AllDirectories);
-            if (files.Count() > 0)
+            try
             {
-                DisplayCurrentFiles(files);   
+                if (files.Any()) LoadExistingFile(files);
+                else LoadFromPath();
             }
-            else
+            catch (Exception ex)
             {
-                LoadFromPath();
+                Console.WriteLine("\nError while loading/parsing grammar:\n" + ex.Message);
+                Transition();
             }
         }
 
-        private void DisplayCurrentFiles(IEnumerable<string> files)
+        private void LoadExistingFile(IEnumerable<string> files)
         {
+            // Displays files in the current directory
             Console.WriteLine("Some files with .txt extension have been found in the current directory:");
             for (int i = 0; i < files.Count(); i++)
             {
-                Console.WriteLine($"{i + 1}. {files.ElementAt(i)}");
+                Console.WriteLine($"{i + 1}. {Path.GetFileName(files.ElementAt(i))}");
             }
-            Console.WriteLine($"{files.Count() + 1} select an other path");
+            Console.WriteLine($"{files.Count() + 1}. Select an other path");
+
+            // Loads selected file
             string? answer_string = Console.ReadLine();
             if (answer_string == null)
             {
@@ -38,49 +43,54 @@ namespace Nt.SyntaxAnalyser.Application.Programs
                 return;
             }
             int answer = int.Parse(answer_string);
+
             if (answer > 0 && answer <= files.Count())
             {
                 string filePath = files.ElementAt(new Index(answer - 1));
-                try
-                {
-                    string fileContent = File.ReadAllText(filePath);
-                    var generator = new SyntaxParser();
-                    Grammar grammar = generator.ParseString(fileContent);
-                    LL1Parser.Parse(grammar);
-                    Console.WriteLine("\nLoaded and parsed grammar:\n" + grammar.ToString());
-                    Program.SetNewMethod(new CodeAnalysis(Program, grammar));
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("\nError while loading/parsing grammar:\n" + ex.Message);
-                }
+                string fileContent = File.ReadAllText(filePath);
+                var generator = new SyntaxParser();
+                var grammar = generator.ParseString(fileContent);
+
+                Transition();
+                Console.WriteLine("Loaded grammar:\n" + grammar.ToString());
+
+                LL1Parser.Parse(grammar);
+                Transition();
+                Console.WriteLine("Parsed grammar:\n" + grammar.ToString());
+
+                // Starts code analysis
+                var codeAnalysis = new CodeAnalysis(Program, grammar);
+                codeAnalysis.Execute();
             }
             else
             {
-                LoadFromPath();
+                var grammar = LoadFromPath();
+
+                // Starts code analysis
+                var codeAnalysis = new CodeAnalysis(Program, grammar);
+                codeAnalysis.Execute();
             }
         }
 
-        private void LoadFromPath()
+        private Grammar LoadFromPath()
         {
             var generator = new SyntaxParser();
+
             Console.WriteLine("Enter the full path to the grammar file:");
             string? customPath = Console.ReadLine();
-            if (customPath != null)
-            {
-                try
-                {
-                    string fileContent = File.ReadAllText(customPath);
-                    Grammar grammar = generator.ParseString(fileContent);
-                    LL1Parser.Parse(grammar);
-                    Console.WriteLine("\nLoaded and parsed grammar:\n" + grammar.ToString());
-                    Program.SetNewMethod(new CodeAnalysis(Program, grammar));
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("\nError while loading/parsing grammar:\n" + ex.Message);
-                }
-            }
+            string fileContent = File.ReadAllText(customPath);
+            Grammar grammar = generator.ParseString(fileContent);
+
+            // Displays loaded grammar
+            Transition();
+            Console.WriteLine("Loaded grammar:\n" + grammar.ToString());
+
+            // Parses the grammar
+            LL1Parser.Parse(grammar);
+            Transition();
+            Console.WriteLine("\nLoaded and parsed grammar:\n" + grammar.ToString());
+
+            return grammar;
         }
     }
 

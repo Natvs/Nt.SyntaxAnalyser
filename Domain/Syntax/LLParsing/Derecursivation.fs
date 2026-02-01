@@ -4,8 +4,9 @@ open Nt.Parser.Symbols
 open Nt.Syntax.Structures
 open Nt.Syntax.LLParsing.Utils
 
-let private need_direct_derecursivation (rules: Rule list) (s: ISymbol): bool =
-    rules
+/// Checks if a given non-terminal needs direct derecursivation
+let private need_direct_derecursivation (g: Grammar) (s: ISymbol): bool =
+    g.Rules
     |> List.ofSeq
     |> List.filter(fun r -> r.Token.Symbol = s && r.Derivation.Count > 0)
     |> List.filter(fun r -> r.Derivation[0] |> compare_token s GrammarTokenType.NonTerminal)
@@ -59,7 +60,10 @@ let private eliminate_symbol_indirect_recursivity (axiom: ISymbol) (first_symbol
     let recursive_rules = 
         rules 
         |> List.filter(fun r -> r.Token.Symbol = axiom && r.Derivation.Count > 0)
-        |> List.filter(fun r -> r.Derivation[0] |> compare_token first_symbol GrammarTokenType.NonTerminal)
+        |> List.filter(fun r -> r.Derivation[0] |> compare_token first_symbol GrammarTokenType.NonTerminal &&
+                                g.Rules 
+                                |> List.ofSeq 
+                                |> List.exists (fun sr -> sr.Token.Symbol = r.Derivation[0].Symbol))
 
     let symbol_rules = 
         rules 
@@ -116,7 +120,7 @@ let public eliminate_recursivity (g: Grammar) =
 
     nonTerminals 
     |> List.iter(fun s -> 
-        match s |> need_direct_derecursivation (g.Rules |> List.ofSeq) with
+        match s |> need_direct_derecursivation g with
             | false -> ()
             | true -> eliminate_direct_recursivity s g |> ignore
         )

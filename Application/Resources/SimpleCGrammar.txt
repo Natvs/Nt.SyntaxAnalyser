@@ -1,4 +1,4 @@
-﻿N = {ROOT, VALUE, TYPE, INT, IDENT, TEST}
+﻿N = {ROOT, VALUE, IDENT, INT}
 T = {=, ", ;, var, a}
 
 S = ROOT
@@ -6,6 +6,5 @@ S = ROOT
 R: ROOT -> var IDENT = INT '\; ;
 R: VALUE -> " IDENT " | IDENT | INT ;
 
-E: TYPE = [\w]+ ;
+E: IDENT = [_\w]+ ;
 E: INT = [\d]+ ;
-E: IDENT = [_\w][_\w\d]+ ;

@@ -20,16 +20,16 @@ namespace Nt.Syntax.Programs
                     files.AddRange(Directory.EnumerateFiles(path, "*.txt", SearchOption.AllDirectories));
                 }
             }
-            //try
-            //{
-            if (files.Any()) LoadExistingFile(files);
-            else LoadFromPath();
-            //}
-            //catch (Exception ex)
-            //{
-            //Console.WriteLine("\nError while loading/parsing grammar:\n" + ex.Message);
-            //Transition();
-            //}
+            try
+            {
+                if (files.Any()) LoadExistingFile(files);
+                else LoadFromPath();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("\nError while loading/parsing grammar:\n" + ex.Message);
+                Transition();
+            }
         }
 
         private void LoadExistingFile(IEnumerable<string> files)

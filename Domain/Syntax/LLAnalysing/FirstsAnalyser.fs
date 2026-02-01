@@ -1,33 +1,38 @@
 ﻿module Nt.Syntax.LLAnalysing.FirstsAnalyser
 
+open Nt.Parser.Symbols
 open Nt.Syntax.Structures
 open Nt.Syntax.LLAnalysing.Utils
 
-let rec private compute_sequence (empty_generators: int list) (firsts: int list list) (sequence: GrammarToken list) =
-    match sequence with
-    | [] -> []
-    | symbol::_ when symbol.Type = GrammarTokenType.Terminal -> symbol.Index::[]
-    | symbol::tail when empty_generators |> List.contains symbol.Index -> firsts[symbol.Index]@(tail |> compute_sequence empty_generators firsts)
-    | symbol::_ -> firsts[symbol.Index]
-
-let rec private compute_firsts (empty_generators: int list) (firsts: int list list) (rules: Rule list) =
+/// Perform one iteration to compute new firsts for all rules
+let rec private get_firsts (empty_generators: ISymbol list) (firsts: Map<SyntaxSymbol, Set<SyntaxSymbol>>) (rules: Rule list) =
     match rules with
     | [] -> firsts
     | rule::tail -> 
-        let local_new_firsts = (rule.Derivation |> List.ofSeq) |> compute_sequence empty_generators firsts
-        let new_firsts = firsts |> List.mapi (fun i value -> if rule.Token.Index = i then local_new_firsts@value |> List.distinct else value )
-        tail |> compute_firsts empty_generators new_firsts
+        let local_new_firsts = (rule.Derivation |> List.ofSeq) |> get_sequence_firsts empty_generators firsts
+        if local_new_firsts.IsEmpty then
+            tail |> get_firsts empty_generators firsts
+        else
+            let _get_new_firsts_set (opt: Set<SyntaxSymbol> option) = 
+                match opt with
+                | Some lst -> Some( lst + local_new_firsts )
+                | None -> Some( local_new_firsts )
+            let new_firsts = firsts.Change (rule.Token.Symbol :?> SyntaxSymbol, _get_new_firsts_set)
+            tail |> get_firsts empty_generators new_firsts
 
-let rec private compute_all_firsts (empty_generators: int list) (firsts: int list list) (rules: Rule list) =
-    let new_firsts = rules |> compute_firsts empty_generators firsts
-    if (firsts, new_firsts) ||> compare_lists
+/// Recursively compute all firsts until no new ones are found
+let rec private get_all_firsts (empty_generators: ISymbol list) (firsts: Map<SyntaxSymbol, Set<SyntaxSymbol>>) (rules: Rule list) =
+    let new_firsts = rules |> get_firsts empty_generators firsts
+    if (firsts, new_firsts) ||> compare_maps 
         then new_firsts
-        else rules |> compute_all_firsts empty_generators new_firsts
+        else rules |> get_all_firsts empty_generators new_firsts
 
+
+/// Public function to compute firsts symbols for a grammar
 [<CompiledName("Analyse")>]
-let public get_firsts (g: Grammar) (empty_generators: int list) =
+let public analyse (g: Grammar) (empty_generators: ISymbol list) =
     g.Rules
     |> List.ofSeq
-    |> compute_all_firsts empty_generators [for _ in [1 .. g.NonTerminals.Count] -> []]
+    |> get_all_firsts empty_generators Map.empty
 
 

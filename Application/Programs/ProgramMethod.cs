@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nt.SyntaxAnalyser.Application.Programs
+﻿namespace Nt.Syntax.Programs
 {
     internal abstract class ProgramMethod
     {
@@ -15,7 +9,7 @@ namespace Nt.SyntaxAnalyser.Application.Programs
 
         abstract public void Execute();
 
-        protected void Transition()
+        protected static void Transition()
         {
             Console.WriteLine("");
             Console.WriteLine("- - - - - - - - - - - - - - - - - - - -");

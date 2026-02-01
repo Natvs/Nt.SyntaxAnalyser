@@ -1,25 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Nt.Syntax.LLParsing;
-using Nt.Syntax.LLAnalysing;
+﻿using Nt.Syntax.LLAnalysing;
 using Nt.Syntax;
 
-namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
+namespace Nt.Tests.Syntax.LLAnalysing
 {
-    public class EmptyAnalyserTest
+    public class EmptyAnalyserTest : SetupFixture
     {
-        private List<int> GetEmptyGenerators(string filename)
+        private List<string> GetEmptyGenerators(string filename)
         {
             var parser = new SyntaxParser();
             var grammar = parser.ParseFile(filename);
 
             var emptygenerators = EmptyAnalyser.Analyse(grammar);
 
-            return [.. emptygenerators];
+            return [.. emptygenerators.Select(g => g.Name)];
         }
 
         [Fact]
@@ -36,7 +29,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
             var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/Empty/empty_test2.txt");
 
             Assert.Single(emptygenerators);
-            Assert.Contains(0, emptygenerators);
+            Assert.Contains("EMPTY", emptygenerators);
         }
 
         [Fact]
@@ -45,7 +38,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
             var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/Empty/empty_test3.txt");
 
             Assert.Single(emptygenerators);
-            Assert.Contains(1, emptygenerators);
+            Assert.Contains("EMPTY", emptygenerators);
         }
 
         [Fact]
@@ -54,8 +47,8 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
             var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/Empty/empty_test4.txt");
 
             Assert.Equal(2, emptygenerators.Count);
-            Assert.Contains(0, emptygenerators);
-            Assert.Contains(1, emptygenerators);
+            Assert.Contains("A", emptygenerators);
+            Assert.Contains("B", emptygenerators);
         }
 
         [Fact]
@@ -64,7 +57,7 @@ namespace Nt.SyntaxAnalyser.Tests.Domain.LLAnalysing
             var emptygenerators = GetEmptyGenerators("../../../Resources/Analyse/Empty/empty_test5.txt");
 
             Assert.Single(emptygenerators);
-            Assert.Contains(1, emptygenerators);
+            Assert.Contains("B", emptygenerators);
         }
 
     }

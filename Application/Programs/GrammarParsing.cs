@@ -1,8 +1,7 @@
 ﻿using Nt.Syntax.LLParsing;
-using Nt.Syntax;
 using Nt.Syntax.Structures;
 
-namespace Nt.SyntaxAnalyser.Application.Programs
+namespace Nt.Syntax.Programs
 {
 
     internal class GrammarParsing(Program program) : ProgramMethod(program)

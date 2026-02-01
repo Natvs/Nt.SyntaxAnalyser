@@ -1,7 +1,7 @@
-﻿N = {S, A, B, C}
+﻿N = {A, B}
 T = {a, b, c}
 
 S = B
 
-R:  A -> a ;
-R:  B -> a b | c ;
+R: A -> a ;
+R: B -> a b | c ;

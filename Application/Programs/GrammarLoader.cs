@@ -1,28 +1,35 @@
 ﻿using Nt.Syntax.LLParsing;
-using Nt.Syntax;
 using Nt.Syntax.Structures;
-using System.Reflection.Emit;
 
-namespace Nt.SyntaxAnalyser.Application.Programs
+namespace Nt.Syntax.Programs
 {
+
     internal class GrammarLoader(Program program) : ProgramMethod(program)
     {
+        private static List<string> paths = [".", "./Resources", "../../../Resources"];
 
         public override void Execute()
         {
             Transition();
 
-            var files = Directory.EnumerateFiles(".", "*.txt", SearchOption.AllDirectories);
-            try
+            var files = new List<string>();
+            foreach (var path in paths)
             {
-                if (files.Any()) LoadExistingFile(files);
-                else LoadFromPath();
+                if (Directory.Exists(path))
+                {
+                    files.AddRange(Directory.EnumerateFiles(path, "*.txt", SearchOption.AllDirectories));
+                }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("\nError while loading/parsing grammar:\n" + ex.Message);
-                Transition();
-            }
+            //try
+            //{
+            if (files.Any()) LoadExistingFile(files);
+            else LoadFromPath();
+            //}
+            //catch (Exception ex)
+            //{
+            //Console.WriteLine("\nError while loading/parsing grammar:\n" + ex.Message);
+            //Transition();
+            //}
         }
 
         private void LoadExistingFile(IEnumerable<string> files)
@@ -53,8 +60,8 @@ namespace Nt.SyntaxAnalyser.Application.Programs
 
                 Transition();
                 Console.WriteLine("Loaded grammar:\n" + grammar.ToString());
-
                 LL1Parser.Parse(grammar);
+
                 Transition();
                 Console.WriteLine("Parsed grammar:\n" + grammar.ToString());
 
@@ -72,7 +79,7 @@ namespace Nt.SyntaxAnalyser.Application.Programs
             }
         }
 
-        private Grammar LoadFromPath()
+        private static Grammar LoadFromPath()
         {
             var generator = new SyntaxParser();
 

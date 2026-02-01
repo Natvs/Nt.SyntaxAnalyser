@@ -1,122 +1,117 @@
 ﻿module Nt.Syntax.LLParsing.Utils
 
-open Nt.Parsing.Structures
+open Nt.Parser.Symbols
+open Nt.Parser.Structures
 open Nt.Syntax.Structures
 
 (*- - - - - OPERATIONS ON TOKENS - - - - -*)
 
 /// Compares two tokens
 let internal compare_tokens (token1: GrammarToken) (token2: GrammarToken) =
-    token1.Index = token2.Index && token1.Type = token2.Type
+    token1.Symbol = token2.Symbol && token1.Type = token2.Type
 
 /// Compare the token with a given type and index
-let internal compare_token (index: int) (t: GrammarTokenType) (token: GrammarToken) =
-    token.Index = index && token.Type = t
+let internal compare_token (symbol: ISymbol) (t: GrammarTokenType) (token: GrammarToken) =
+    token.Symbol = symbol && token.Type = t
 
-/// Creates a symbol from its string representation
-let internal create_symbol (name: string) =
-    new Symbol(name)
-
-/// Extends the name of a token at a given index
-let internal extend_symbol (symbols: SymbolsList) (index: int) (stringExtension: string) =
-    let rec get_unique_name (root: string) (id: int) (strings: string list) =
-        let newtoken = root + id.ToString()
-        match strings |> List.contains newtoken with
-            | false -> newtoken
-            | true -> strings |> get_unique_name root (id + 1)
+/// Get a new name by extending an existing one with a given string extension. The method ensures unicity of the new name.
+let internal get_extended_name (stringExtension: string) (symbols: SymbolsList) (symbol: ISymbol) =
+    let rec get_unique_name (root: string) (id: int) (names: string list) =
+        let new_name = root + id.ToString()
+        match names |> List.contains new_name with
+            | false -> new_name
+            | true -> names |> get_unique_name root (id + 1)
 
     let token_name =
-        symbols
+        symbols.GetSymbols()
         |> List.ofSeq
         |> List.map(fun t -> t.Name)
-        |> get_unique_name (symbols.Item(index).Name + stringExtension) 1
+        |> get_unique_name (symbol.Name + stringExtension) 1
 
-    new Symbol(token_name)
+    token_name
 
-/// Defines if a symbol is unique in a list of symbols
+/// Define if a symbol is unique in a list of symbols
 let internal is_symbol_existing (symbols: SymbolsList) (symbol: string)  =
-    symbols
+    symbols.GetSymbols()
     |> List.ofSeq
     |> List.map (fun t -> t.Name)
     |> List.contains symbol
 
+/// Add a symbol as a terminal of the grammar
+let internal add_as_terminal (g: Grammar) (name: string) =
+    g.AddTerminal(name)
 
-/// Adds a token to a tokens list
-let internal add_to_symbols (symbols: SymbolsList) (symbol: Symbol)  =
-    symbols.Add(symbol)
-    symbol
-
-
-
+/// Add a symbol as a non-terminal of the grammar
+let internal add_as_non_terminal (g: Grammar) (name: string) =
+    g.AddNonTerminal(name)
 
 (*- - - - - OPERATIONS ON RULES - - - - -*)
 
-/// Creates an empty rule for a given symbol index
-let internal create_empty_rule (terminals: SymbolsList) (nonTerminals: SymbolsList) (symbolIndex:int) =
-    let rule = new Rule(terminals, nonTerminals)
-    rule.SetToken(symbolIndex, -1)
+/// Add an empty rule to the grammar
+let internal add_empty_rule_to_grammar (symbol: ISymbol) (g: Grammar) = 
+    g.AddRule(NonTerminal(symbol, -1))
+
+/// Add a rule with a derivation to the grammar
+let internal add_rule_to_grammar (symbol: ISymbol) (derivation:GrammarToken list) (g: Grammar) = 
+    let rule = g.AddRule(NonTerminal(symbol, -1))   
+    derivation |> List.iter (fun t -> rule.Add(t) |> ignore)
     rule
 
-/// Creates a rule for a given symbol index and derivation
-let internal create_rule (terminals: SymbolsList) (nonTerminals: SymbolsList) (symbolIndex:int) (derivation:GrammarToken list) =
-    let rule = new Rule(terminals, nonTerminals)
-    rule.SetToken(symbolIndex, -1)
-    derivation
-    |> List.map (fun (t:GrammarToken) -> 
-        match t with
-            | :? Terminal -> rule.AddTerminal(t.Index, -1) 
-            | :? NonTerminal -> rule.AddNonTerminal(t.Index, -1)
-            | _ -> ()
-    ) |> ignore
-    rule
-
-/// Removes a collection of rules from the grammar
-let internal remove_rules_from_grammar (g: Grammar) (rules: Rule list) =
-    rules
-    |> List.iter (fun r -> g.Rules.Remove r |> ignore)
+/// Add multiple rules with derivations to the grammar
+let internal add_rules_to_grammar (symbol: ISymbol) (derivations:GrammarToken list list) (g: Grammar) = 
+    let add_symbol_rule_to_grammar = add_rule_to_grammar symbol
+    derivations 
+    |> List.iter (fun d -> g |> add_symbol_rule_to_grammar d |> ignore)
     g
 
-/// Adds a non-terminal to the derivation of a rule
-let internal add_non_terminal_to_derivation (index:int) (rule: Rule) : Rule =
-    rule.AddNonTerminal(index, -1)
+/// Add a non-terminal to the derivation of a rule
+let internal add_non_terminal_to_derivation (symbol: ISymbol) (rule: Rule) : Rule =
+    rule.Add(NonTerminal(symbol, -1))
     rule
 
-/// Adds a symbol to a rule's derivation
+/// Expand the derivation of a rule with a list of tokens
 let internal expand_rule_derivation (tokens: GrammarToken list) (rule: Rule) : Rule =
-    tokens |> List.map (fun (t:GrammarToken) -> rule.Derivation.Add(t)) |> ignore
+    tokens 
+    |> List.map (fun t -> rule.Derivation.Add(t)) 
+    |> ignore
     rule
 
-/// Removes the first symbol of a derivation pattern
-let internal remove_first_token (p: GrammarToken list) =
-    match p with
-        | a::tail -> tail
+/// Get a new derivation by removing the first token from a given derivation
+let internal remove_first_token (r: Rule) =
+    let derivation = r.Derivation |> List.ofSeq
+    match derivation with
+        | _::tail -> tail
         | _ -> []
 
+/// Remove a rule from the grammar
+let internal remove_rule_from_grammar (rule: Rule) (g: Grammar) =
+    g.Remove(rule)
+    g
+
+/// Remove a list of rules from the grammar
+let internal remove_rules_from_grammar (rules: Rule list) (g: Grammar) =
+    rules 
+    |> List.iter (fun r -> g.Remove(r) |> ignore)
+    g
 
 
 
 
 (*- - - - - OPERATIONS ON REGULAR EXPRESSIONS - - - - -*)
 
-/// Adds a rule to the grammar
-let internal add_rule_to_grammar (g: Grammar) (rule: Rule) = 
-    g.Rules.Add(rule) |> ignore
-    g
-
-/// Creates a regular expressing for a given symbol and pattern
-let internal create_regex (nonTerminals: SymbolsList) (symbolIndex:int) (pattern: string) =
-    let regex = new RegularExpression(nonTerminals)
-    regex.SetToken(symbolIndex, -1)
+/// Add a regular expression to the grammar
+let internal add_regex_to_grammar (symbol: ISymbol) (pattern: string) (g: Grammar) =
+    let regex = g.AddRegex(NonTerminal(symbol, -1))
     regex.AddSymbols(pattern)
     regex
 
-/// Adds a regular expression to the grammar
-let internal add_regex_to_grammar (g: Grammar) (regex: RegularExpression) =
-    g.RegularExpressions.Add(regex) |> ignore
+/// Remove a regular expression from the grammar
+let internal remove_regex_from_grammar (regex: RegularExpression) (g: Grammar) =
+    g.Remove(regex)
     g
 
-/// Removes a collection of regular expressions from the grammar
-let internal remove_regexs_from_grammar (g: Grammar) (regexs: RegularExpression list) =
-    regexs
-    |> List.iter (fun rg -> g.RegularExpressions.Remove rg |> ignore)
+/// Remove a list of regular expressions from the grammar
+let internal remove_regexs_from_grammar (regexs: RegularExpression list) (g: Grammar) =
+    regexs 
+    |> List.iter (fun r -> g.Remove(r) |> ignore)
     g

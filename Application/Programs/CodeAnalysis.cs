@@ -1,23 +1,24 @@
-﻿using Nt.Parsing.Structures;
-using Nt.Parsing;
+﻿using Nt.Parser;
+using Nt.Parser.Symbols;
 using Nt.Syntax.LLAnalysing;
 using Nt.Syntax.Structures;
 
-namespace Nt.SyntaxAnalyser.Application.Programs
+namespace Nt.Syntax.Programs
 {
 
     internal class CodeAnalysis(Program program, Grammar grammar) : ProgramMethod(program)
     {
         public override void Execute()
         {
-            var analyseSet = LL1AnalyseSet.Get(grammar, new SymbolsList([";"]));
+            var symbolFactory = new Utils.SyntaxSymbolFactory();
+            var analyseSet = LL1AnalyseSet.Get(grammar, new Parser.Structures.SymbolsList(symbolFactory, [";"]));
 
             bool continue_analysis = true;
             while (continue_analysis)
             {
                 string? text = null;
                 string input = "";
-                var parser = new Parser([' ', '\n'], ["{", "}", ";", "\""]);
+                var parser = new SymbolsParser(symbolFactory, [' ', '\n'], ["{", "}", ";", "\""]);
                 Console.WriteLine("Enter text to analyze");
                 while (text != "end")
                 {
@@ -43,7 +44,7 @@ namespace Nt.SyntaxAnalyser.Application.Programs
             foreach (var syntaxException in analyseResult.SyntaxExceptions)
             {
                 error = true;
-                Console.WriteLine($"Syntax error at line {syntaxException.Data0.Line}: unexpected symbol {parserResult.Symbols[syntaxException.Data0.TokenIndex].Name}.");
+                Console.WriteLine($"Syntax error at line {syntaxException.Data0.Line}: unexpected symbol {syntaxException.Data0.Symbol.Name}.");
             }
             if (analyseResult.EndOfFileStatus == LL1Analyser.EndOfFileStatus.Failed)
             {

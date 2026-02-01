@@ -1,109 +1,122 @@
 ﻿module Nt.Syntax.LLParsing.RegexMerge
 
+open Nt.Parser.Symbols
 open Nt.Syntax.Structures
 open Nt.Syntax.LLParsing.Utils
 
 exception public EmptyRegExPatternException
 exception public EmptyRegExNameException
 
+/// Get the merged regex patterns separated by '|'
 let rec private merge_patterns (patterns: string list) =
     match patterns with
     | [] -> raise(EmptyRegExPatternException)
     | pattern::[] -> pattern
     | pattern::tail -> pattern + "|" + (tail |> merge_patterns)
 
+/// Get the merged regex names separated by '_'
 let rec private merge_names (names: string list) =
     match names with
     | [] -> raise(EmptyRegExNameException)
     | name::[] -> name
     | name::tail -> name + "_" + (tail |> merge_names)
-
-let internal replace_derivation_start (index: int) (rule: Rule) =
-    rule.Derivation.RemoveAt(0)
-    rule.InsertNonTerminal(0, index, -1)
-
-let rec private merge_same_symbol_regex (g: Grammar) (index: int) =
+    
+/// Merge the regexs when a symbol has multiple regex definitions
+let rec private merge_same_symbol_regex (g: Grammar) (symbol: ISymbol) =
     let regexs =
         g.RegularExpressions
         |> List.ofSeq
-        |> List.filter (fun rg -> rg.Token.Index = index)
+        |> List.filter (fun rg -> rg.Token.Symbol = symbol)
 
-    (*Computes the new pattern and adds the new rule to grammar*)
-    regexs
-    |> List.map (fun rg -> rg.Pattern)
-    |> merge_patterns
-    |> create_regex g.NonTerminals (index)
-    |> add_regex_to_grammar g
+    (*Computes the new pattern*)
+    let new_pattern = 
+        regexs
+        |> List.map (_.Pattern)
+        |> merge_patterns
+
+    (*Remove the old regexs and add the merged one to the grammar*)
+    g
+    |> remove_regexs_from_grammar regexs
+    |> add_regex_to_grammar symbol new_pattern
     |> ignore
 
-    (*Removes the old rules*)
-    regexs
-    |> remove_regexs_from_grammar g
-
-let rec private merge_same_symbol_rules (g: Grammar) (index: int) =
+/// Merge the regexs when multiple rules start with the same regex symbol
+let rec private merge_same_symbol_rules (g: Grammar) (symbol: ISymbol) =
+    (*Computes rules with same symbol beginning by a regex symbol*)
     let rules = 
         g.Rules
         |> List.ofSeq
-        |> List.filter (fun r -> r.Token.Index = index && r.Derivation.Count > 0)
+        |> List.filter (fun r -> r.Token.Symbol = symbol && r.Derivation.Count > 0)
         |> List.filter (fun r -> 
             r.Derivation[0].Type = GrammarTokenType.NonTerminal &&
             g.RegularExpressions
             |> List.ofSeq
-            |> List.exists (fun rg -> rg.Token.Index = r.Derivation[0].Index)
+            |> List.exists (fun rg -> rg.Token.Symbol = r.Derivation[0].Symbol)
         )
+
+    (*Computes symbols of regex to merge*)
     let symbols =
         rules
-        |> List.filter (fun r -> r.Derivation.Count > 0)
-        |> List.map (fun r -> r.Derivation[0].Index)
+        |> List.map (fun r -> r.Derivation[0].Symbol)
     
     if (symbols.Length > 1) then
-        (*Computes the new symbol name*)
+        (*Computes the symbol name for the new regex*)
         let new_name =
             symbols
-            |> List.map (fun index -> g.NonTerminals[index].Name)
+            |> List.map (fun s -> s.Name)
             |> merge_names
 
         if new_name |> is_symbol_existing g.NonTerminals = false then
-            new_name
-            |> create_symbol
-            |> add_to_symbols g.NonTerminals
-            |> ignore
+            let new_symbol = 
+                new_name
+                |> add_as_non_terminal g
 
-            let regexs =
+            (*Add the new merged regex to the grammar*)
+            let new_pattern =
                 g.RegularExpressions
                 |> List.ofSeq
-                |> List.filter (fun rg -> symbols |> List.contains rg.Token.Index)
+                |> List.filter (fun rg -> symbols |> List.contains rg.Token.Symbol)
+                |> List.map (_.Pattern)
+                |> merge_patterns
 
-            (*Computes the new patterns and adds the new rule to grammar*)
-            regexs
-            |> List.map (fun rg -> rg.Pattern)
-            |> merge_patterns
-            |> create_regex g.NonTerminals (g.NonTerminals.Count - 1)
-            |> add_regex_to_grammar g
+            g
+            |> add_regex_to_grammar new_symbol new_pattern
             |> ignore
 
-        let symbol_index =
-            g.NonTerminals
-            |> List.ofSeq
-            |> List.findIndex (fun nt -> nt.Name = new_name)
+        let new_token = NonTerminal(g.NonTerminals.Get(new_name), -1)
 
+        (*Remove old rules and create new ones with the merged symbol*)
         rules
-        |> List.iter (fun r -> r |> replace_derivation_start symbol_index)
+        |> List.iter (fun r -> 
+            let derivation = r |> remove_first_token
+            g
+            |> remove_rule_from_grammar r
+            |> add_rule_to_grammar r.Token.Symbol (new_token::[])
+            |> expand_rule_derivation derivation
+            |> ignore)
     g
 
+/// Apply regexs merging on the grammar
 [<CompiledName("Merge")>]
 let merge_regexs (g: Grammar) =
+    (*Two different merges happen here. 
+    The first only merges the regular expressions when a symbol has multiple regex definitions.
+    The second merges regular expressions when the regex symbol is the first symbol of derivation of rules with the same symbol.*)
+
     (*Merges patterns when a regex has several definitions*)
-    [0 .. g.NonTerminals.Count-1]
-    |> List.filter (fun index ->
+    g.NonTerminals.GetSymbols()
+    |> List.ofSeq
+    |> List.filter (fun nt ->
         g.RegularExpressions
         |> List.ofSeq
-        |> List.exists (fun rg -> rg.Token.Index = index)
+        |> List.exists (fun rg -> rg.Token.Symbol = nt)
     )
     |> List.iter (fun index -> merge_same_symbol_regex g index |> ignore)
 
     (*Merges patterns when a non terminal has two rules starting with regexs*)
-    [0 .. g.NonTerminals.Count - 1]
-    |> List.iter (fun index -> merge_same_symbol_rules g index |> ignore)
+    g.NonTerminals.GetSymbols()
+    |> List.ofSeq
+    |> List.iter (fun symbol -> merge_same_symbol_rules g symbol |> ignore)
+
     g
 

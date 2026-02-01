@@ -3,7 +3,7 @@ T = {=, ", ;, var, a}
 
 S = ROOT
 
-R: ROOT -> var IDENT = INT \; ;
+R: ROOT -> var IDENT = INT '\; ;
 R: VALUE -> " IDENT " | IDENT | INT ;
 
 E: TYPE = [\w]+ ;

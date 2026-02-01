@@ -1,14 +1,9 @@
-﻿using Nt.Syntax.LLParsing;
-using Nt.Syntax;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Nt.Syntax;
+using Nt.Syntax.LLParsing;
 
-namespace Nt.Syntax.Domain.LLParsing.Tests
+namespace Nt.Tests.Syntax.LLParsing
 {
-    public class FactorisationTest
+    public class FactorisationTest : SetupFixture
     {
         private static void TestFactorisation(string rawpath, string resultpath)
         {

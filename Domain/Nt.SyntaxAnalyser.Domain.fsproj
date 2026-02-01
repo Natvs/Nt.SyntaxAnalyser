@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Nt.SyntaxAnalyser</RootNamespace>
     <AssemblyName>Nt.SyntaxAnalyser.$(MSBuildProjectName)</AssemblyName>
   </PropertyGroup>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Prod.Nt.SyntaxParser" Version="1.0.5" />
+    <PackageReference Include="Nt.SyntaxParser" Version="1.1.2" />
   </ItemGroup>
 
 </Project>

@@ -1,14 +1,14 @@
-﻿N = {S, A, B, C, A_rec1, B_rec1}
+﻿N = {A, B, C, A_rec1, B_rec1}
 T = {a, b, c}
 
-S = S
-
-R: S -> A ;
+S = A
 
 R: A -> B A_rec1 ;
-R: A_rec1 -> c A_rec1 | ;
+R: A_rec1 -> c A_rec1 ;
+R: A_rec1 -> ;
 
 R: B -> C B_rec1 ;
-R: B_rec1 -> b B_rec1 | ;
+R: B_rec1 -> b B_rec1 ;
+R: B_rec1 -> ;
 
 R: C -> a ;

@@ -1,14 +1,9 @@
 ﻿using Nt.Syntax.LLParsing;
 using Nt.Syntax;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Nt.SyntaxAnalyser.Tests.Domain.LLParsing
+namespace Nt.Tests.Syntax.LLParsing
 {
-    public class RegexMergeTest
+    public class RegexMergeTest : SetupFixture
     {
         private static void TestMerge(string rawpath, string resultpath)
         {

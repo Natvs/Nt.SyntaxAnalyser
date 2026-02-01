@@ -1,10 +1,13 @@
-﻿namespace Nt.SyntaxAnalyser.Application.Programs
+﻿namespace Nt.Syntax.Programs
 {
     internal class Home(Program program) : ProgramMethod(program)
     {
 
         public override void Execute()
         {
+            var config = SyntaxParserConfig.GetInstance();
+            config.SetSymbolFactory(new LLAnalysing.Utils.SyntaxSymbolFactory());
+
             Transition();
 
             var answer = "0";
@@ -19,12 +22,12 @@
                 answer = Console.ReadLine();
                 if (answer == "1")
                 {
-                    var grammarParsing = new GrammarCreation(program);
+                    var grammarParsing = new GrammarCreation(Program);
                     grammarParsing.Execute();
                 }
                 else if (answer == "2")
                 {
-                    var codeAnalysis = new GrammarLoader(program);
+                    var codeAnalysis = new GrammarLoader(Program);
                     codeAnalysis.Execute();
                 }
             }

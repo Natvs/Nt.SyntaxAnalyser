@@ -1,5 +1,0 @@
-N = {A, REGEX}
-S = A
-R: A -> REGEX ;
-E: REGEX = a ;
-E: REGEX = b ;

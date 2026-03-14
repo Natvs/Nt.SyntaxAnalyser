@@ -1,13 +1,13 @@
-﻿using Nt.Syntax.LLParsing;
+﻿using Nt.Syntax.Automaton;
+using Nt.Syntax.LLParsing;
 using Nt.Syntax.Structures;
 
 namespace Nt.Syntax.Programs
 {
 
-    internal class GrammarParsing(Program program) : ProgramMethod(program)
+    internal class GrammarParsing(ApplicationContext context) : ProgramMethod(context)
     {
-
-        public override void Execute()
+        public override void Perform()
         {
             bool continue_parsing = true;
 
@@ -40,6 +40,8 @@ namespace Nt.Syntax.Programs
                 if (answer == null) return;
                 if (answer.ToLower().Equals("y") || answer.ToLower().Equals("yes")) continue_parsing = true;
             }
+            Transition();
+            Context.Automaton.Pop(true);
         }
     }
 

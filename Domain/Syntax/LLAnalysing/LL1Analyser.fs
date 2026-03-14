@@ -14,9 +14,29 @@ exception public SyntaxException of ParsedToken
 exception public UnexpectedEndOfFileException
 
 // Exceptions the analyser can trigger
-exception public AmbiguousGrammar
-exception public RuleNotFoundException of ISymbol
-exception public UnknownSymbolType of GrammarToken
+type AmbiguousException(token: ParsedToken, rules: EnrichedRule list) =
+    inherit System.Exception(
+        let rec get_rules_string (left: EnrichedRule list) =
+            match left with
+            | [] -> ""
+            | r::tail -> 
+                let rule_str = 
+                    sprintf "\n    %s -> %s" 
+                        r.Token.Symbol.Name 
+                        (r.Derivation 
+                        |> List.map (fun t -> t.Symbol.Name) 
+                        |> String.concat " ")
+                rule_str + (get_rules_string tail)
+
+        sprintf "Ambiguous grammar: multiple rules apply for symbol '%s' (line %d).%s " token.Symbol.Name token.Line (get_rules_string rules)
+    )
+   
+
+    member this.Token = token
+    member this.Rules = rules
+
+exception public RuleNotFoundException of symbol:ISymbol
+exception public UnknownSymbolType of token:GrammarToken
 
 /// Context used during the analysis process
 type private AnalyserContext = {
@@ -148,7 +168,9 @@ and private handle_non_terminal (symbol :ISymbol) (context : AnalyserContext) =
         else
             let rules =
                 context.Rules
-                |> List.filter (fun r -> r.Token.Symbol = symbol && r.DirectiveSymbols |> Set.contains (parsed.Symbol :?> SyntaxSymbol))
+                |> List.filter (fun r -> r.Token.Symbol = symbol && 
+                                            r.DirectiveSymbols 
+                                            |> Set.contains (parsed.Symbol :?> SyntaxSymbol))
 
             if rules.Length = 0 then
                 context |> handle_regex symbol
@@ -156,7 +178,7 @@ and private handle_non_terminal (symbol :ISymbol) (context : AnalyserContext) =
                 let rule = rules.Head
                 context |> handle_sequence rule.Derivation
             else
-                raise AmbiguousGrammar
+                raise (AmbiguousException (parsed, rules))
     elif context.Regexs |> List.exists (fun rg -> rg.Token.Symbol = symbol) then
         // Handles the case where there are no rules but a regular expression
         context |> handle_regex symbol

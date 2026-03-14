@@ -12,4 +12,8 @@
     <ProjectReference Include="..\Domain\Nt.SyntaxAnalyser.Domain.fsproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Nt.Automaton" Version="1.1.0" />
+  </ItemGroup>
+
 </Project>

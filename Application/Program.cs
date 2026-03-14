@@ -1,21 +1,20 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
-using Nt.Syntax.Programs;
+using Nt.Syntax.Automaton;
 
 internal class Program
 {
-
-    public Program()
-    {
-        var currentMethod = new Home(this);
-        currentMethod.Execute();
-    }
-
-    public static void SetNewMethod(ProgramMethod newmethod) { newmethod.Execute(); }
-
     private static void Main(string[] args)
     {
-        var program = new Program();
+        var context = new ApplicationContext();
+
+        // Iterate until the user escapes from the initial state
+        while (!context.Automaton.IsEmpty())
+        {
+            var answer = Console.ReadLine();
+            if (answer == null) continue;
+            context.Automaton.Read(new ApplicationToken(answer));
+        }
     }
 
 }

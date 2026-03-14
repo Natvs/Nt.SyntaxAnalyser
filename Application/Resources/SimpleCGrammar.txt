@@ -1,10 +1,35 @@
-﻿N = {ROOT, VALUE, IDENT, INT}
-T = {=, ", ;, var, a}
+﻿T = {(, ), ;, {, '\}}
 
+N = {ROOT, EXPRS}
 S = ROOT
+R: ROOT -> EXPRS ;
 
-R: ROOT -> var IDENT = INT '\; ;
-R: VALUE -> " IDENT " | IDENT | INT ;
+N = {EXPRS, EXPR, TYPE, VALUE, IDENT}
+T = {=}
+R: EXPRS -> EXPR EXPRS | ;
+R: EXPR -> TYPE IDENT = VALUE '\; ;
 
-E: IDENT = [_\w]+ ;
-E: INT = [\d]+ ;
+N = {EXPR, EXPRS, COND, ELSE}
+T = {if, elseif, else}
+R: EXPR -> if ( COND ) { EXPRS } ELSE ;
+R: ELSE -> elseif ( COND ) { EXPRS } ELSE ;
+R: ELSE -> else { EXPRS } | ;
+
+N = {EXPRS, TYPE, IDENT, VALUE, COND, OP}
+T = {for, =}
+R: EXPR -> for ( TYPE IDENT = VALUE '\; COND '\; OP ) { EXPRS } ;
+
+N = {COND, OP, IDENT, VALUE}
+T = {<, >, <=, >=, ==, !=, =, ++, --}
+R: COND -> VALUE < VALUE | VALUE > VALUE | VALUE <= VALUE | VALUE >= VALUE | VALUE == VALUE | VALUE !\= VALUE ;
+R: OP -> IDENT = COND | IDENT +\+ | IDENT -\- ;
+
+N = {VALUE, IDENT, STRING, INT, FLOAT}
+R: VALUE -> STRING | IDENT | INT | FLOAT ;
+
+T = {STRING, IDENT, INT, TYPE}
+E: TYPE = var | int | float | string ;
+E: STRING = ".*" ;
+E: IDENT = [_a-zA-Z]+ ;
+E: INT = [1-9][0-9]* ;
+E: FLOAT = [0-9]+.[0-9]+ ;

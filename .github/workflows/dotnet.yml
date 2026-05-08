@@ -7,6 +7,9 @@ on:
   push:
     branches: [ "master" ]
   pull_request:
+    types: 
+      - opened
+      - synchronize
     branches: [ "master" ]
 
 jobs:
@@ -19,7 +22,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: 10.0.x
     - name: Authenticate GitHub package source
       run: |
         dotnet nuget add source \
@@ -34,3 +37,36 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+
+  publish-nuget:
+
+    needs: build
+    if: github.event_name == 'push'
+    
+    runs-on: ubuntu-latest
+    env:
+      NuGetDirectory: "${{github.workspace}}/nuget"
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Authenticate GitHub package source
+        run: |
+          dotnet nuget add source \
+          https://nuget.pkg.github.com/Natvs/index.json \
+            --name github \
+            --username Natvs \
+            --password ${{ secrets.PACKAGE_REPO_TOKEN }} \
+            --store-password-in-clear-text
+      - name: Pack
+        run: dotnet pack ./Domain --configuration Release --output ${{env.NuGetDirectory}}
+      - name: Publish
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path "${{env.NuGetDirectory}}" -Filter "*.nupkg" | ForEach-Object {
+              dotnet nuget push $_.FullName --source "github"
+          }
+          

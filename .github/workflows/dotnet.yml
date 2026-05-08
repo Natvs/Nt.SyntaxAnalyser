@@ -45,7 +45,7 @@ jobs:
     
     runs-on: ubuntu-latest
     env:
-      NuGetDirectory: ${{github.workspace}}/nuget
+      NuGetDirectory: "${{github.workspace}}/nuget"
 
     steps:
       - uses: actions/checkout@v4
@@ -66,9 +66,7 @@ jobs:
       - name: Publish
         shell: pwsh
         run: |
-          $items = Get-ChildItem -Path ${{env.NuGetDirectory}} -Filter *.nupkg \
-          for ($i = 0; $i -lt $items.Count; $i++) {
-              $item = $items[$i]
-              dotnet nuget push $item.FullName --source "github"
+          Get-ChildItem -Path "${{env.NuGetDirectory}}" -Filter "*.nupkg" | ForEach-Object {
+              dotnet nuget push $_.FullName --source "github"
           }
           

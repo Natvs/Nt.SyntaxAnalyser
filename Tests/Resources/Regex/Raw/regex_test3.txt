@@ -1,5 +1,7 @@
 ﻿N = {A, INT, IDENT}
 
+S = A
+
 R: A -> INT ;
 R: A -> IDENT ;
 

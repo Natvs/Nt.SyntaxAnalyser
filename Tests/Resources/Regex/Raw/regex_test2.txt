@@ -1,5 +1,7 @@
 ﻿N = {DIGIT}
 
+S = DIGIT
+
 E: DIGIT = 0 ;
 E: DIGIT = 1 ;
 E: DIGIT = 2 ;

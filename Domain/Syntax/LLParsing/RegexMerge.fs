@@ -1,6 +1,7 @@
 ﻿module Nt.Syntax.LLParsing.RegexMerge
 
 open Nt.Parser.Symbols
+open Nt.Syntax
 open Nt.Syntax.Structures
 open Nt.Syntax.LLParsing.Utils
 
@@ -118,5 +119,17 @@ let merge_regexs (g: Grammar) =
     |> List.ofSeq
     |> List.iter (fun symbol -> merge_same_symbol_rules g symbol |> ignore)
 
+    g
+
+[<CompiledName("RemoveUnreachableRegexs")>]
+let rec public eliminate_unused_regexs (regexs: RegularExpression list) (unused: ISymbol list) (g: Grammar) =
+    regexs |> List.iter (fun r ->
+            if unused |> List.contains r.Token.Symbol
+            then g |> remove_regexs_from_grammar (r::[]) |> ignore
+        )
+
+    let new_regexs = g.RegularExpressions |> List.ofSeq
+    if Comparator.compare_regexs_set new_regexs regexs = false
+    then g |> eliminate_unused_regexs new_regexs unused |> ignore
     g
 

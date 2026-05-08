@@ -39,8 +39,8 @@ let rec public compare_rules_set (l1: Rule list) (l2: Rule list) =
         l2 |> List.exists(fun r2 -> compare_rules r1 r2)
     )
 
-[<CompiledName("CompareRegExps")>]
-let rec public compare_regexps (e1: RegularExpression) (e2: RegularExpression) =
+[<CompiledName("CompareRegExs")>]
+let rec public compare_regexs (e1: RegularExpression) (e2: RegularExpression) =
     let rec get_next (current: char list) (pattern: char list) (depth: int) =
         match depth, pattern with
         | _, [] -> current, []
@@ -65,11 +65,11 @@ let rec public compare_regexps (e1: RegularExpression) (e2: RegularExpression) =
     let sub_patterns_2 = split_regex (e2.Pattern.ToCharArray() |> List.ofArray) 0
     compare_grammar_token e1.Token e2.Token && compare_sub_patterns sub_patterns_1 sub_patterns_2
     
-[<CompiledName("CompareRegExps")>]
-let rec public compare_regexps_set (l1: RegularExpression list) (l2: RegularExpression list) =
+[<CompiledName("CompareRegExs")>]
+let rec public compare_regexs_set (l1: RegularExpression list) (l2: RegularExpression list) =
     l1.Length = l2.Length &&
     l1 |> List.forall(fun e1 ->
-        l2 |> List.exists(fun e2 -> compare_regexps e1 e2)
+        l2 |> List.exists(fun e2 -> compare_regexs e1 e2)
     )
 
 [<CompiledName("CompareGrammars")>]
@@ -84,7 +84,7 @@ let rec public compare_grammars (g1: Grammar) (g2: Grammar) =
         ::(compare_tokens_list (g1.Terminals.GetSymbols() |> List.ofSeq) (g2.Terminals.GetSymbols() |> List.ofSeq))
         ::(compare_tokens_list (g1.NonTerminals.GetSymbols() |> List.ofSeq) (g2.NonTerminals.GetSymbols() |> List.ofSeq))
         ::(compare_rules_set (List.ofSeq g1.Rules) (List.ofSeq g2.Rules))
-        ::(compare_regexps_set (List.ofSeq g1.RegularExpressions) (List.ofSeq g2.RegularExpressions))
+        ::(compare_regexs_set (List.ofSeq g1.RegularExpressions) (List.ofSeq g2.RegularExpressions))
         ::[]
     comparisons |> List.forall (fun b -> b = true)
 

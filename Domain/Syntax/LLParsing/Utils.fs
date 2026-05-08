@@ -3,6 +3,7 @@
 open Nt.Parser.Symbols
 open Nt.Parser.Structures
 open Nt.Syntax.Structures
+open Nt.Syntax.Builders
 
 (*- - - - - OPERATIONS ON TOKENS - - - - -*)
 
@@ -15,7 +16,7 @@ let internal compare_token (symbol: ISymbol) (t: GrammarTokenType) (token: Gramm
     token.Symbol = symbol && token.Type = t
 
 /// Get a new name by extending an existing one with a given string extension. The method ensures unicity of the new name.
-let internal get_extended_name (stringExtension: string) (symbols: SymbolsList) (symbol: ISymbol) =
+let internal get_extended_name (stringExtension: string) (symbols: ISymbol list) (symbol: ISymbol) =
     let rec get_unique_name (root: string) (id: int) (names: string list) =
         let new_name = root + id.ToString()
         match names |> List.contains new_name with
@@ -23,38 +24,51 @@ let internal get_extended_name (stringExtension: string) (symbols: SymbolsList) 
             | true -> names |> get_unique_name root (id + 1)
 
     let token_name =
-        symbols.GetSymbols()
-        |> List.ofSeq
+        symbols
         |> List.map(fun t -> t.Name)
         |> get_unique_name (symbol.Name + stringExtension) 1
 
     token_name
 
 /// Define if a symbol is unique in a list of symbols
-let internal is_symbol_existing (symbols: SymbolsList) (symbol: string)  =
-    symbols.GetSymbols()
-    |> List.ofSeq
+let internal is_symbol_existing (symbols: ISymbol list) (symbol: string)  =
+    symbols
     |> List.map (fun t -> t.Name)
     |> List.contains symbol
 
 /// Add a symbol as a terminal of the grammar
 let internal add_as_terminal (g: Grammar) (name: string) =
-    g.AddTerminal(name)
+    g.GetBuilder().AddTerminal(name) |> ignore
+    g.Terminals.Get(name)
 
 /// Add a symbol as a non-terminal of the grammar
 let internal add_as_non_terminal (g: Grammar) (name: string) =
-    g.AddNonTerminal(name)
+    g.GetBuilder().AddNonTerminal(name) |> ignore
+    g.NonTerminals.Get(name)
 
 (*- - - - - OPERATIONS ON RULES - - - - -*)
 
 /// Add an empty rule to the grammar
 let internal add_empty_rule_to_grammar (symbol: ISymbol) (g: Grammar) = 
-    g.AddRule(NonTerminal(symbol, -1))
+    let rule = Rule(g)
+                .GetBuilder()
+                .SetToken(NonTerminal(symbol, -1)) 
+                .Build()
+    g.GetBuilder().Add(rule) |> ignore
+    rule
 
 /// Add a rule with a derivation to the grammar
 let internal add_rule_to_grammar (symbol: ISymbol) (derivation:GrammarToken list) (g: Grammar) = 
-    let rule = g.AddRule(NonTerminal(symbol, -1))   
-    derivation |> List.iter (fun t -> rule.Add(t) |> ignore)
+    let rule = Rule(g)
+    let builder = rule
+                    .GetBuilder()
+                    .SetToken(NonTerminal(symbol, -1))
+    derivation |> List.iter (
+        fun t -> 
+                builder.Add(t) 
+                |> ignore
+        )
+    g.GetBuilder().Add(rule) |> ignore
     rule
 
 /// Add multiple rules with derivations to the grammar
@@ -66,13 +80,13 @@ let internal add_rules_to_grammar (symbol: ISymbol) (derivations:GrammarToken li
 
 /// Add a non-terminal to the derivation of a rule
 let internal add_non_terminal_to_derivation (symbol: ISymbol) (rule: Rule) : Rule =
-    rule.Add(NonTerminal(symbol, -1))
+    rule.GetBuilder().Add(NonTerminal(symbol, -1)) |> ignore
     rule
 
 /// Expand the derivation of a rule with a list of tokens
 let internal expand_rule_derivation (tokens: GrammarToken list) (rule: Rule) : Rule =
     tokens 
-    |> List.map (fun t -> rule.Derivation.Add(t)) 
+    |> List.map (fun t -> rule.GetBuilder().Add(t)) 
     |> ignore
     rule
 
@@ -85,33 +99,35 @@ let internal remove_first_token (r: Rule) =
 
 /// Remove a rule from the grammar
 let internal remove_rule_from_grammar (rule: Rule) (g: Grammar) =
-    g.Remove(rule)
-    g
+    g.GetBuilder().Remove(rule).Build()
 
 /// Remove a list of rules from the grammar
 let internal remove_rules_from_grammar (rules: Rule list) (g: Grammar) =
+    let builder = g.GetBuilder()
     rules 
-    |> List.iter (fun r -> g.Remove(r) |> ignore)
+    |> List.iter (fun r -> builder.Remove(r) |> ignore)
     g
-
-
-
 
 (*- - - - - OPERATIONS ON REGULAR EXPRESSIONS - - - - -*)
 
 /// Add a regular expression to the grammar
 let internal add_regex_to_grammar (symbol: ISymbol) (pattern: string) (g: Grammar) =
-    let regex = g.AddRegex(NonTerminal(symbol, -1))
-    regex.AddSymbols(pattern)
+    let regex = RegularExpression(g)
+                    .GetBuilder()
+                    .SetToken(NonTerminal(symbol, -1))
+                    .AddSymbols(pattern)
+                    .Build()
+    g.GetBuilder().Add(regex) |> ignore
     regex
 
 /// Remove a regular expression from the grammar
 let internal remove_regex_from_grammar (regex: RegularExpression) (g: Grammar) =
-    g.Remove(regex)
+    g.GetBuilder().Remove(regex) |> ignore
     g
 
 /// Remove a list of regular expressions from the grammar
 let internal remove_regexs_from_grammar (regexs: RegularExpression list) (g: Grammar) =
+    let builder = g.GetBuilder()
     regexs 
-    |> List.iter (fun r -> g.Remove(r) |> ignore)
+    |> List.iter (fun r -> builder.Remove(r) |> ignore)
     g

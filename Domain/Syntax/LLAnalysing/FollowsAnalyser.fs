@@ -2,6 +2,7 @@
 
 open Nt.Parser.Symbols;
 open Nt.Syntax.Structures
+open Nt.Syntax.Builders
 open Nt.Syntax.LLAnalysing.Utils
 
 /// Compute follows for a single derivation sequence
@@ -56,11 +57,12 @@ let rec private get_all_follows (empty_generators: ISymbol list) (firsts: Map<Sy
 
 /// Initialize the follows map with EOF for the axiom
 let rec private init_follows (g: Grammar) =
-    let eof = g.AddTerminal("EOF") :?> SyntaxSymbol
+    g.GetBuilder().AddTerminal("EOF") |> ignore
+    let eof = g.Terminals.Get("EOF") :?> SyntaxSymbol
     let axiom = g.Axiom.Symbol :?> SyntaxSymbol
     Map [ (axiom, Set [ eof ]) ]
 
-/// Public function to get the follows of a grammar. Adds EOF to the grammar if non existent.
+/// Public function to get the follows of a grammar. Adds symbol EOF to the grammar
 [<CompiledName("Analyse")>]
 let public analyse (g: Grammar) (empty_generators: ISymbol list) (firsts: Map<SyntaxSymbol, Set<SyntaxSymbol>>) =
     g.Rules

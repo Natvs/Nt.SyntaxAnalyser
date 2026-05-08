@@ -1,14 +1,26 @@
-﻿N = {A, TYPE, IDENT, INT, STRING, FLOAT, VALUE}
-T = {;, =}
+﻿NON TERMINALS:
+	<axiom>,
+	<terrrain>,
+	<type>,
+	<size>;
 
-S = A
+TERMINALS:
+	Terrain
 
-R: A -> TYPE IDENT = VALUE \; ;
-R: VALUE -> INT | FLOAT | STRING ;
+TERMINALS:
+	mountain,
+	plain,
+	sea;
 
-E: TYPE = var|int|float|string ;
+TERMINALS:
+	small,
+	medium,
+	large;
 
-E: IDENT = [a-zA-Z_]+ ;
-E: INT = [1-9][0-9]*|0 ;
-E: FLOAT = ([0-9]|0),[0-9]+ ;
-E: STRING = "[^"]*" ;
+AXIOM: <axiom>
+
+RULES:
+	<axiom> -> <terrain> <axiom> | <terrain>
+	<terrain> -> Terrain <type> <size>
+	<type> -> mountain | plain | sea
+	<size> -> small | medium | large

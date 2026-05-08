@@ -97,7 +97,7 @@ let rec public factorise_rules (g: Grammar) (rules_subset: Rule list): Grammar =
     (*Add the new non-terminal used as new rules symbol*)
     let new_symbol =
         reference.Token.Symbol
-        |> get_extended_name "_fact" g.NonTerminals
+        |> get_extended_name "_fact" (g.NonTerminals.GetSymbols() |> List.ofSeq)
         |> add_as_non_terminal g
 
     (*Creates the new factorisation rules*)

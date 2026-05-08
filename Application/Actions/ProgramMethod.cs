@@ -4,13 +4,11 @@ using Nt.Syntax.Automaton;
 
 namespace Nt.Syntax.Programs
 {
-    internal abstract class ProgramMethod : IAction
+    internal abstract class ProgramMethod(ApplicationContext context) : IAction
     {
         public abstract void Perform();
 
-        protected ApplicationContext Context { get; set; }
-        public ProgramMethod(ApplicationContext context) => this.Context = context;
-
+        protected ApplicationContext Context { get; set; } = context;
 
         protected static void Transition()
         {

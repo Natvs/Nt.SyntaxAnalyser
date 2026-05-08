@@ -16,7 +16,7 @@ let private need_direct_derecursivation (g: Grammar) (s: ISymbol): bool =
 let private eliminate_direct_recursivity (s: ISymbol) (g:Grammar) =
     let new_symbol =
         s
-        |> get_extended_name "_rec" g.NonTerminals
+        |> get_extended_name "_rec" (g.NonTerminals.GetSymbols() |> List.ofSeq)
         |> add_as_non_terminal g
 
     let rules = 

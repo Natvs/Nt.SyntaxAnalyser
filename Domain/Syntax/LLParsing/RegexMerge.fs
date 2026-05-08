@@ -66,7 +66,7 @@ let rec private merge_same_symbol_rules (g: Grammar) (symbol: ISymbol) =
             |> List.map (fun s -> s.Name)
             |> merge_names
 
-        if new_name |> is_symbol_existing g.NonTerminals = false then
+        if new_name |> is_symbol_existing (g.NonTerminals.GetSymbols() |> List.ofSeq) = false then
             let new_symbol = 
                 new_name
                 |> add_as_non_terminal g

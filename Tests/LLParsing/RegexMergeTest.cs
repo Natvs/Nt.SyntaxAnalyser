@@ -10,6 +10,7 @@ namespace Nt.Tests.Syntax.LLParsing
             var parser = new SyntaxParser();
             var grammar = parser.ParseFile(rawpath);
             grammar = RegexMerge.Merge(grammar);
+            grammar = RulesEdition.RemoveDoubleRules(grammar);
 
             var result_grammar = parser.ParseFile(resultpath);
             Assert.True(Comparator.CompareGrammars(grammar, result_grammar));

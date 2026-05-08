@@ -19,6 +19,7 @@
     <Compile Include="Syntax\LLParsing\RegexMerge.fs" />
     <Compile Include="Syntax\LLParsing\Factorisation.fs" />
     <Compile Include="Syntax\LLParsing\Derecursivation.fs" />
+    <Compile Include="Syntax\LLParsing\RulesSimplification.fs" />
     <Compile Include="Syntax\LLParsing\LL1Parser.fs" />
   </ItemGroup>
 

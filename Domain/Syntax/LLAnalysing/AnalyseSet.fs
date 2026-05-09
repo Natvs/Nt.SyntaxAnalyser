@@ -81,7 +81,7 @@ let rec private get_all_enriched_regexs (regexs: RegularExpression list) =
 
 /// Public function to get the lookahead set of a grammar
 [<CompiledName("Get")>]
-let public get_lookahead_set (g: Grammar) (checkpoints: SymbolsList) =
+let public get_lookahead_set (g: Grammar) (checkpoints: System.Collections.Generic.List<char>) =
     let empty_generators = g |> EmptyAnalyser.analyse
     let firsts = (g, empty_generators) ||> FirstsAnalyser.analyse
     let follows = (g, empty_generators, firsts) |||> FollowsAnalyser.analyse
@@ -91,7 +91,7 @@ let public get_lookahead_set (g: Grammar) (checkpoints: SymbolsList) =
         EOF = eof
         Terminals = g.Terminals.GetSymbols() |> List.ofSeq
         NonTerminals = g.NonTerminals.GetSymbols() |> List.ofSeq
-        Checkpoints = checkpoints.GetSymbols() |> List.ofSeq
+        Checkpoints = checkpoints |> List.ofSeq |> List.map (fun name -> Symbol(sprintf "%c" name))
         Rules = g.Rules |> List.ofSeq |> get_all_enriched_rules empty_generators firsts follows;
         RegEx = g.RegularExpressions |> List.ofSeq |> get_all_enriched_regexs
     }

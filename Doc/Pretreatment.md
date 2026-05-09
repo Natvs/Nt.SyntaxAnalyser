@@ -3,7 +3,9 @@ In order to make the grammar LL(1) compliant, some pretreatments steps are appli
 1. Rules factorisation
 2. Derecursivation
 3. Regular expressions factorisation
-4. Redundant rules removal
+4. Removal of unreachable rules
+5. Deletion of unused symbols
+6. Redundant rules suppression
 
 ## Rules factorisation
 Factorisation consists in extracting common prefixes from the productions of a same non-terminal. 
@@ -72,7 +74,17 @@ In this case, the three rules for A have the same prefix `var IDENT = `, so the 
 ```
 A -> var IDENT = INT_STRING_CHAR
 
+IDENT = [a-zA-Z_][a-zA-Z0-9_]*
 INT_STRING_CHAR = [1-9][0-9]*|0|"(^")*"|'[^']'
 ```
+
+## Removal of unreachable rules
+Some rules or regular expressions might appear in the grammar but can't be accessed from any derivation from the axiom. These rules and regular expressions are removed from the grammar.
+
+## Deletion of unused symbols
+The grammar file syntax allows to define more symbols that symbols used. Moreover, pre-treatment of the grammar may make some symbols unused, or define some symbols that would be later unused. All these symbols are deleted from the grammar.
+
+## Redundant rules suppression
+This step only consists of removing the rules that appear multiple times in the grammar, either because it was originally defined multiple times or because previous treatment introducing some duplicatas.
 
 

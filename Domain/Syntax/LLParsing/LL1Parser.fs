@@ -7,6 +7,7 @@ open Nt.Syntax.LLParsing.Factorisation
 open Nt.Syntax.LLParsing.RegexMerge
 open Nt.Syntax.LLParsing.RulesSimplification
 
+
 let private get_unused_non_terminals (g: Grammar) =
     g
     |> get_used_symbols (fun t -> t.Type = GrammarTokenType.NonTerminal)
@@ -29,7 +30,7 @@ let private eliminate_unused_items (g: Grammar) =
 
 /// Parses the grammar to make it LL(1) compliant
 [<CompiledName("Parse")>]
-let public parse(g: Grammar): Grammar =
+let public parse_to_LL1(g: Grammar): Grammar =
     g
     |> eliminate_recursivity
     |> factorise

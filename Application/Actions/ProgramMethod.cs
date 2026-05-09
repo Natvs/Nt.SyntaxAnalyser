@@ -1,8 +1,7 @@
 ﻿using Nt.Automaton.Actions;
-using Nt.Automaton.States;
 using Nt.Syntax.Automaton;
 
-namespace Nt.Syntax.Programs
+namespace Nt.Syntax.Actions
 {
     internal abstract class ProgramMethod(ApplicationContext context) : IAction
     {

@@ -2,7 +2,7 @@
 using Nt.Syntax.LLParsing;
 using Nt.Syntax.Structures;
 
-namespace Nt.Syntax.Programs
+namespace Nt.Syntax.Actions
 {
 
     internal class GrammarLoader(ApplicationContext context) : ProgramMethod(context)

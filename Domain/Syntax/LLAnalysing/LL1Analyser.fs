@@ -1,11 +1,13 @@
 ﻿module Nt.Syntax.LLAnalysing.LL1Analyser
 
+open System.IO
 open System.Text.RegularExpressions
 
 open Nt.Parser
 open Nt.Parser.Symbols
 open Nt.Parser.Structures
 open Nt.Syntax.Structures
+open Nt.Syntax.LLParsing.LL1Parser
 open Nt.Syntax.LLAnalysing.LL1AnalyseSet
 open Nt.Syntax.LLAnalysing.Utils
 
@@ -14,7 +16,7 @@ exception public SyntaxException of ParsedToken
 exception public UnexpectedEndOfFileException
 
 // Exceptions the analyser can trigger
-type AmbiguousException(token: ParsedToken, rules: EnrichedRule list) =
+type AmbiguousException (token: ParsedToken, rules: EnrichedRule list) =
     inherit System.Exception(
         let rec get_rules_string (left: EnrichedRule list) =
             match left with
@@ -31,9 +33,8 @@ type AmbiguousException(token: ParsedToken, rules: EnrichedRule list) =
         sprintf "Ambiguous grammar: multiple rules apply for symbol '%s' (line %d).%s " token.Symbol.Name token.Line (get_rules_string rules)
     )
    
-
-    member this.Token = token
-    member this.Rules = rules
+    member _.Token = token
+    member _.Rules = rules
 
 exception public RuleNotFoundException of symbol:ISymbol
 exception public UnknownSymbolType of token:GrammarToken
@@ -185,9 +186,9 @@ and private handle_non_terminal (symbol :ISymbol) (context : AnalyserContext) =
     else
         raise (RuleNotFoundException symbol)
 
-/// Analyse a parser result against an analyse set
+/// Analyse a parser result from an analyse set
 [<CompiledName("Analyse")>]
-let public analyse (analyseSet: AnalyseSet) (parserResult: ParserResult) =
+let public analyse_from_analyse_set (analyseSet: AnalyseSet) (parserResult: ParserResult) =
     let context = { 
         Terminals = analyseSet.Terminals |> List.ofSeq
         NonTerminals = analyseSet.NonTerminals |> List.ofSeq
@@ -213,3 +214,23 @@ let public analyse (analyseSet: AnalyseSet) (parserResult: ParserResult) =
         SyntaxExceptions = context.SyntaxExceptionsList
         EndOfFileStatus = endOfFileStatus
     }
+
+/// Analyse a parser result from a grammar.
+[<CompiledName("Analyse")>]
+let public analyse_from_grammar (g: Grammar) (parserResult: ParserResult) (checkpoints: System.Collections.Generic.List<char>) =
+    let analyse_set = get_lookahead_set g checkpoints
+    analyse_from_analyse_set analyse_set parserResult
+
+/// Read a string and parse it to a grammar
+[<CompiledName("ParseString")>]
+let public parse_grammar_from_string (input: string) =
+    let parser = Nt.Syntax.SyntaxParser()
+    parser.ParseString(input)
+    |> parse_to_LL1
+
+/// Read a file and parse the content to a grammar
+[<CompiledName("ParseFile")>]
+let public parse_grammar_from_file (filename: string) =
+    let parser = Nt.Syntax.SyntaxParser()
+    parser.ParseFile(filename)
+    |> parse_to_LL1

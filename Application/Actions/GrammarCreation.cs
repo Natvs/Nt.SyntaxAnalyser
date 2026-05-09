@@ -1,10 +1,8 @@
-﻿using Nt.Automaton.States;
-using Nt.Automaton.Transitions;
-using Nt.Syntax.Automaton;
+﻿using Nt.Syntax.Automaton;
 using Nt.Syntax.LLParsing;
 using Nt.Syntax.Structures;
 
-namespace Nt.Syntax.Programs
+namespace Nt.Syntax.Actions
 {
     internal class GrammarCreation(ApplicationContext context) : ProgramMethod(context)
     {

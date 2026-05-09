@@ -1,5 +1,5 @@
 ﻿using Nt.Automaton.Automatons;
-using Nt.Syntax.Programs;
+using Nt.Syntax.Actions;
 using Nt.Syntax.Structures;
 
 namespace Nt.Syntax.Automaton

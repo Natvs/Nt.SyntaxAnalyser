@@ -1,10 +1,7 @@
-﻿using Nt.Parser;
-using Nt.Parser.Symbols;
-using Nt.Syntax.Automaton;
+﻿using Nt.Syntax.Automaton;
 using Nt.Syntax.LLAnalysing;
-using Nt.Syntax.Structures;
 
-namespace Nt.Syntax.Programs
+namespace Nt.Syntax.Actions
 {
 
     internal class CodeAnalysis(ApplicationContext context) : ProgramMethod(context)
@@ -20,25 +17,22 @@ namespace Nt.Syntax.Programs
             }
             try
             {
-                var symbolFactory = new Utils.SyntaxSymbolFactory();
-                var analyseSet = LL1AnalyseSet.Get(Context.Grammar, new Parser.Structures.SymbolsList(symbolFactory, [";"]));
+                var reader = SourceReader.CreateFromGrammar(Context.Grammar, [' ', '\n'], ["{", "}", ";"], [';', '}']);
 
                 bool continue_analysis = true;
                 while (continue_analysis)
                 {
                     string? text = null;
                     string input = "";
-                    var parser = new SymbolsParser(symbolFactory, [' ', '\n'], ["{", "}", ";"]);
                     Console.WriteLine("Enter text to analyze");
                     while (text != "end")
                     {
                         text = Console.ReadLine();
                         if (text != "end") input += text + "\n";
                     }
-                    var parserResult = parser.Parse(input);
-                    var analyseResult = LL1Analyser.Analyse(analyseSet, parserResult);
+                    var analyseResult = reader.AnalyseString(input);
                     if (Context.Grammar == null) return;
-                    PrintAnalyseResult(Context.Grammar, parserResult, analyseResult);
+                    PrintAnalyseResult(analyseResult);
 
                     continue_analysis = false;
                     Console.WriteLine();
@@ -59,7 +53,7 @@ namespace Nt.Syntax.Programs
             }
         }
 
-        private static void PrintAnalyseResult(Grammar grammar, ParserResult parserResult, LL1Analyser.AnalyseResult analyseResult)
+        private static void PrintAnalyseResult(LL1Analyser.AnalyseResult analyseResult)
         {
             var error = false;
             foreach (var syntaxException in analyseResult.SyntaxExceptions)

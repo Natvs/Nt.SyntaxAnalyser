@@ -1,7 +1,6 @@
 ﻿module Nt.Syntax.LLParsing.Utils
 
 open Nt.Parser.Symbols
-open Nt.Parser.Structures
 open Nt.Syntax.Structures
 open Nt.Syntax.Builders
 

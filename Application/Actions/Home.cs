@@ -2,7 +2,7 @@
 using Nt.Automaton.Transitions;
 using Nt.Syntax.Automaton;
 
-namespace Nt.Syntax.Programs
+namespace Nt.Syntax.Actions
 {
     internal class Home(ApplicationContext context) : ProgramMethod(context)
     {

@@ -19,7 +19,6 @@ let private compare_strings (str1: string) (str2: string) =
     ||> compare_chars
 
 type SyntaxSymbol(name: string) =
-
     interface ISymbol with
         member _.get_Name() = name
 
@@ -38,9 +37,8 @@ type SyntaxSymbol(name: string) =
         match obj with
         | :? SyntaxSymbol as o when name = (o :> ISymbol).Name -> true
         | _ -> false
-
-    override this.GetHashCode() = hash name
-    override this.ToString() = name
+    override _.GetHashCode() = hash name
+    override _.ToString() = name
 
 type SyntaxSymbolFactory() =
     interface ISymbolFactory with

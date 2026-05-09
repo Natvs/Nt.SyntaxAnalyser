@@ -5,7 +5,7 @@ open Nt.Syntax
 open Nt.Syntax.Structures
 open Nt.Syntax.LLParsing.Utils
 
-(* Removes the rules that are defined two times *)
+(* Removes the rules that are defined multiple times *)
 
 let rec private eliminate_double_rules (rules: Rule list) (seen: string list) (g: Grammar) =
     match rules with
@@ -22,25 +22,6 @@ let public eliminate_identical_rules (g: Grammar) =
 
 (* Remove the rules that are unreachable *)
 
-let rec private get_pattern_used_non_terminals (tokens: GrammarToken list) =
-    match tokens with
-    | [] -> []
-    | token::tail when token.Type = GrammarTokenType.NonTerminal -> (token.Symbol)::(tail |> get_pattern_used_non_terminals)
-    | _::tail -> tail |> get_pattern_used_non_terminals
-
-let rec private get_used_non_terminals (rules: Rule list) =
-    match rules with
-    | [] -> []
-    | rule::tail ->
-        let used =
-            rule.Derivation
-            |> List.ofSeq
-            |> get_pattern_used_non_terminals
-        used@(tail |> get_used_non_terminals)
-
-let internal get_unused_non_terminals (rules: Rule list) (g: Grammar) =
-    let used = g.Axiom.Symbol::(rules |> get_used_non_terminals) |> List.distinct
-    g.NonTerminals.GetSymbols() |> List.ofSeq |> List.except used
 
 [<CompiledName("RemoveUnreachableRules")>]
 let rec public eliminate_unused_rules (rules: Rule list) (unused: ISymbol list) (g: Grammar) =

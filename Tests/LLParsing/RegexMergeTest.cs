@@ -16,24 +16,25 @@ namespace Nt.Tests.Syntax.LLParsing
         }
 
         [Fact]
-        public void RegexMergeTest_fact_test1()
+        public void RegexMerge_SameSymbolRegexs_ShouldMergeRegexs()
         {
             // Test a single factorisation
             TestMerge("../../../Resources/Regex/Raw/regex_test1.txt", "../../../Resources/Regex/Result/regex_test1_result.txt");
         }
 
         [Fact]
-        public void RegexMergeTest_fact_test2()
+        public void RegexMerge_SeveralSameSymbolRegexs_ShouldMergeRegexs()
         {
             // Test multiple factorisations
             TestMerge("../../../Resources/Regex/Raw/regex_test2.txt", "../../../Resources/Regex/Result/regex_test2_result.txt");
         }
 
         [Fact]
-        public void RegexMergeTest_fact_test3()
+        public void RegexMerge_SameSymbolRuleStaringWithRegex_ShouldMergeRulesAndRegexs()
         {
             // Test nested factorisations
             TestMerge("../../../Resources/Regex/Raw/regex_test3.txt", "../../../Resources/Regex/Result/regex_test3_result.txt");
         }
+
     }
 }

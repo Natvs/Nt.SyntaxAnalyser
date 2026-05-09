@@ -41,7 +41,7 @@ let rec private merge_same_symbol_regex (g: Grammar) (symbol: ISymbol) =
     |> add_regex_to_grammar symbol new_pattern
     |> ignore
 
-/// Merge the regexs when multiple rules start with the same regex symbol
+/// Merge the regexs when multiple rules start with the a regex symbol
 let rec private merge_same_symbol_rules (g: Grammar) (symbol: ISymbol) =
     (*Computes rules with same symbol beginning by a regex symbol*)
     let rules = 

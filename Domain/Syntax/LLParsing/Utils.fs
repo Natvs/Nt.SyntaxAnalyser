@@ -36,15 +36,54 @@ let internal is_symbol_existing (symbols: ISymbol list) (symbol: string)  =
     |> List.map (fun t -> t.Name)
     |> List.contains symbol
 
-/// Add a symbol as a terminal of the grammar
+/// Add a symbol as a terminal of a grammar
 let internal add_as_terminal (g: Grammar) (name: string) =
     g.GetBuilder().AddTerminal(name) |> ignore
     g.Terminals.Get(name)
 
-/// Add a symbol as a non-terminal of the grammar
+/// Add a symbol as a non-terminal of a grammar
 let internal add_as_non_terminal (g: Grammar) (name: string) =
     g.GetBuilder().AddNonTerminal(name) |> ignore
     g.NonTerminals.Get(name)
+
+/// Remove a terminal from a grammar
+let internal remove_terminal_from_grammar (name: string) (g: Grammar) =
+    g.GetBuilder().RemoveTerminal(name).Build()
+
+/// Remove a list of symbol from a grammar
+let internal remove_symbols_from_grammar (remover: string -> Grammar -> Grammar) (names: string list) (g: Grammar) =
+    names
+    |> List.iter (fun name -> g |> remover name |> ignore)
+    g
+
+/// Remove a non-terminal from a grammmar
+let internal remove_non_terminal_from_grammar (name: string) (g: Grammar) =
+    g.GetBuilder().RemoveNonTerminal(name).Build()
+
+// Get a list of symbols used in rules derivations, with a selective method to filter symbols
+let get_used_symbols (selective: GrammarToken -> bool) (g: Grammar) =
+
+    let rec get_used_pattern_symbols (tokens: GrammarToken list) =
+        match tokens with
+        | [] -> []
+        | token::tail when selective token -> (token.Symbol)::(tail |> get_used_pattern_symbols)
+        | _::tail -> tail |> get_used_pattern_symbols
+
+    let rec get_used_rules_symbols (rules: Rule list) =
+         match rules with
+            | [] -> []
+            | rule::tail ->
+                let used =
+                    rule.Derivation
+                    |> List.ofSeq
+                    |> get_used_pattern_symbols
+                used@(tail |> get_used_rules_symbols)
+
+    g.Axiom.Symbol::(g.Rules |> List.ofSeq |> get_used_rules_symbols) |> List.distinct    
+
+/// Get the complementary set, meaning a list containing only the symbols that do not appear in the symbols list
+let get_complementary (universe: ISymbol list) (symbols: ISymbol list) =
+    universe |> List.except symbols
 
 (*- - - - - OPERATIONS ON RULES - - - - -*)
 
